@@ -17,23 +17,23 @@ if __name__ == "__main__":
 
     # Create argument configuration
     config = {
-        "env_name": "TwoArmPegInHole",
-        "robots": ["Panda","Panda"],
+        "env_name"          : "TwoArmPegInHole",
+        "robots"            : ["Panda", "Panda"],
         "controller_configs": controller_config,
-        "env_configuration": "single-arm-opposed",
+        "env_configuration" : "single-arm-opposed",
     }
 
     # Create environment
     env = suite.make(
         **config,
-        has_renderer=True,
-        has_offscreen_renderer=False,
-        render_camera="agentview",
-        ignore_done=True,
-        use_camera_obs=False,
-        reward_shaping=True,
-        control_freq=20,
-        hard_reset=False,
+        has_renderer           = True,
+        has_offscreen_renderer = False,
+        render_camera          = "agentview",
+        ignore_done            = True,
+        use_camera_obs         = False,
+        reward_shaping         = True,
+        control_freq           = 20,
+        hard_reset             = False,
     )
 
     # Wrap this environment in a visualization wrapper
@@ -51,6 +51,9 @@ if __name__ == "__main__":
     while True:
         # Reset the environment
         obs = env.reset()
+        d = obs.copy()
+        for k in d:
+            d[k] = [9999,-9999]
 
         # Setup rendering
         cam_id = 0
@@ -101,4 +104,9 @@ if __name__ == "__main__":
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
+            for k, v in obs.items():
+                if v.min() < d[k][0]:
+                    d[k][0] = v.min()
+                if v.max() > d[k][1]:
+                    d[k][1] = v.max()
             env.render()
