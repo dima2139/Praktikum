@@ -1,6 +1,13 @@
 # g2-peg-in-hole
 
 
+## Installation
+
+* Create a conda or python virtual environment
+* Activate the environment
+* Install robosuite - https://robosuite.ai/docs/installation.html
+* `pip install -r requirements.txt`
+
 
 ## Getting started
 
