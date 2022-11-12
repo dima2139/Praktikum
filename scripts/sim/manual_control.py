@@ -50,10 +50,15 @@ if __name__ == "__main__":
     
     while True:
         # Reset the environment
-        obs = env.reset()
-        d = obs.copy()
-        for k in d:
-            d[k] = [9999,-9999]
+        obs   = env.reset()
+        amin  = np.full((12), np.inf)
+        amax  = np.full((12), -np.inf)
+        p0min = np.full((28), np.inf)
+        p0max = np.full((28), -np.inf)
+        p1min = np.full((28), np.inf)
+        p1max = np.full((28), -np.inf)
+        omin  = np.full((17), np.inf)
+        omax  = np.full((17), -np.inf)
 
         # Setup rendering
         cam_id = 0
@@ -67,7 +72,9 @@ if __name__ == "__main__":
         device.start_control()
 
         arm = "right"
+        i = 0
         while True:
+            i += 1
             # Set active robot
             active_robot = env.robots[arm == "left"]
 
@@ -102,11 +109,47 @@ if __name__ == "__main__":
                 # We're in an environment with no gripper action space, so trim the action space to be the action dim
                 action = action[: env.action_dim]
 
-            # Step through the simulation and render
+            # if action.sum():
+            #     print(4)
+
+
+            # p2Step through the simulation and render
             obs, reward, done, info = env.step(action)
-            for k, v in obs.items():
-                if v.min() < d[k][0]:
-                    d[k][0] = v.min()
-                if v.max() > d[k][1]:
-                    d[k][1] = v.max()
+
+            mask = action < amin
+            amin[mask] = action[mask]
+            mask = action > amax
+            amax[mask] = action[mask]
+
+            mask = obs['robot0_proprio-state'] < p0min
+            p0min[mask] = obs['robot0_proprio-state'][mask]
+            mask = obs['robot0_proprio-state'] > p0max
+            p0max[mask] = obs['robot0_proprio-state'][mask]
+
+            mask = obs['robot1_proprio-state'] < p1min
+            p1min[mask] = obs['robot1_proprio-state'][mask]
+            mask = obs['robot1_proprio-state'] > p1max
+            p1max[mask] = obs['robot1_proprio-state'][mask]
+
+            mask = obs['object-state'] < omin
+            omin[mask] = obs['object-state'][mask]
+            mask = obs['object-state'] > omax
+            omax[mask] = obs['object-state'][mask]
+
+            if i%2000==0:
+                print(i)
+                print('\n\n')
+                print(amin)
+                print(amax)
+                print('\n\n')
+                print(p0min)
+                print(p0max)
+                print('\n\n')
+                print(p1min)
+                print(p1max)
+                print('\n\n')
+                print(omin)
+                print(omax)
+                print('\n\n')
+
             env.render()

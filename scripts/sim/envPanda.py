@@ -11,18 +11,33 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
         Instantiate a Panda RL environment.
         '''
 
-
-        # Define Environment Parameters
+        # Environment parameters
         self.envName = envName
         self.params  = params
         self.dtype   = dtype
 
-        # Define RL parameters
+        # RL parameters
         self.discount = params['gamma']
 
-        # Define the observation specification
+        # Observation specification
         self._observation_spec = tfa.specs.array_spec.BoundedArraySpec(
-            shape = (28 + 17,),  # 28 + 17 + 17
+            shape = (28 + 28 + 17,),
             dtype = dtype,
-            # minimum = []
+            minimum = OBSmin,
+            maximum = OBSmax,
+            name = 'observation'
         )
+
+        # Action specification
+        self._action_spec = tfa.specs.array_spec.BoundedArraySpec(
+            shape   = (12,),
+            dtype   = self.dtype,
+            minimum = Amin,
+            maximum = Amax,
+            name    = 'action'
+        )
+
+    def setState(self):
+        '''
+        Set the observation state.
+        '''
