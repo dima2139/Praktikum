@@ -1,26 +1,32 @@
+'''
+Environment / Interface between the Robosuite environment
+and the Tensorflow Agents model training code.
+Author: Daniel von Eschwege
+Date:   20 November 2022
+'''
+
+
+## Imports
 import numpy as np
 import tf_agents as tfa
 import robosuite as suite
-from robosuite.devices import Keyboard
 from robosuite import load_controller_config
 from robosuite.wrappers import VisualizationWrapper
-from robosuite.utils.input_utils import input2action
 
 from scripts.const import *
 from scripts.utils import *
 
 
 class envPanda(tfa.environments.py_environment.PyEnvironment):
-    def __init__(self, envName, params, dtype):
+    def __init__(self, envName, params):
         '''
         Instantiate a Panda RL environment.
         '''
 
         # Environment parameters
-        self.envName   = envName
-        self.params    = params
-        self.dtype     = dtype
-        self.max_steps = 10
+        self.envName              = envName
+        self.params               = params
+        self.max_steps_per_action = 10
 
         # RL parameters
         self.discount = params['gamma']
@@ -28,7 +34,7 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
         # Observation specification
         self._observation_spec = tfa.specs.array_spec.BoundedArraySpec(
             shape = (28 + 28 + 17,),
-            dtype = dtype,
+            dtype = DTYPE,
             minimum = OBSmin,
             maximum = OBSmax,
             name = 'observation'
@@ -37,7 +43,7 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
         # Action specification
         self._action_spec = tfa.specs.array_spec.BoundedArraySpec(
             shape   = (12,),
-            dtype   = self.dtype,
+            dtype   = DTYPE,
             # minimum = Amin,
             # maximum = Amax,
             minimum = -1,
@@ -88,12 +94,6 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
         self.env.viewer.set_camera(camera_id=cam_id)
         self.env.render()
 
-        # Initialize variables that should the maintained between resets
-        last_grasp = 0
-
-        # # Initialize device control
-        # device.start_control()
-
         return tfa.trajectories.time_step.restart(self._state)
 
     
@@ -103,9 +103,10 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
         if self._episode_ended:
             return self.reset()
 
-        action = np.rint(action * self.max_steps)
+        action = np.rint(action * self.max_steps_per_action)
         for n in max(action):
             pure_action = np.clip(action, -1, 1)
             action[action<0] += 1
             action[action>0] -= 1
             obs, reward, done, info = self.env.step(pure_action)
+            self.env.render()

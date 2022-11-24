@@ -1,4 +1,9 @@
-# Soft Actor-Critic
+'''
+Implements the Soft Actor-Critic model
+and training loop using Tensorflow-Agents.
+Author: Daniel von Eschwege
+Date:   12 November 2022
+'''
 
 
 ## Imports
@@ -21,7 +26,7 @@ tf.random.set_seed(SEED_TF)
 
 
 ## Class
-class soft_actor_critic:
+class softActorCritic:
     def __init__(self, envCollect, envEval, params, modelPath, distributed=True, useGPU=True, useTPU=False):
         '''
         Instantiate the Soft Actor-Critic.

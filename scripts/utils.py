@@ -1,3 +1,9 @@
+'''
+Defines utility functions.
+Author: Daniel von Eschwege
+Date:   2 November 2022
+'''
+
 import os
 import re
 import json
