@@ -51,14 +51,14 @@ if __name__ == "__main__":
     while True:
         # Reset the environment
         obs   = env.reset()
-        amin  = np.full((12), np.inf)
-        amax  = np.full((12), -np.inf)
-        p0min = np.full((28), np.inf)
-        p0max = np.full((28), -np.inf)
-        p1min = np.full((28), np.inf)
-        p1max = np.full((28), -np.inf)
-        omin  = np.full((17), np.inf)
-        omax  = np.full((17), -np.inf)
+        # amin  = np.full((12), np.inf)
+        # amax  = np.full((12), -np.inf)
+        # p0min = np.full((28), np.inf)
+        # p0max = np.full((28), -np.inf)
+        # p1min = np.full((28), np.inf)
+        # p1max = np.full((28), -np.inf)
+        # omin  = np.full((17), np.inf)
+        # omax  = np.full((17), -np.inf)
 
         # Setup rendering
         cam_id = 0
@@ -72,27 +72,31 @@ if __name__ == "__main__":
         device.start_control()
 
         arm = "right"
-        i = 0
+        # i = 0
         while True:
-            i += 1
+            # i += 1
             # Set active robot
             active_robot = env.robots[arm == "left"]
 
             # Get the newest action
             action, grasp = input2action(
-                device=device, robot=active_robot, active_arm=arm, env_configuration=config
+                device            = device,
+                robot             = active_robot,
+                active_arm        = arm,
+                env_configuration = config
             )
 
             # If action is none, then this a reset so we should break
             if action is None:
                 break
 
-            # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
-            # toggle arm control 
+            # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed), toggle arm control 
             if last_grasp < 0 < grasp:
                 arm = "left" if arm == "right" else "right"
+            
             # Update last grasp
             last_grasp = grasp
+            print(grasp)
 
             # Fill out the rest of the action space if necessary
             rem_action_dim = env.action_dim - action.size
@@ -105,51 +109,43 @@ if __name__ == "__main__":
                 else:
                     action = np.concatenate([rem_action, action])
                 
-            elif rem_action_dim < 0:
-                # We're in an environment with no gripper action space, so trim the action space to be the action dim
-                action = action[: env.action_dim]
-
-            # if action.sum():
-            #     print(4)
-
-
             # p2Step through the simulation and render
             obs, reward, done, info = env.step(action)
 
-            mask = action < amin
-            amin[mask] = action[mask]
-            mask = action > amax
-            amax[mask] = action[mask]
+            # mask = action < amin
+            # amin[mask] = action[mask]
+            # mask = action > amax
+            # amax[mask] = action[mask]
 
-            mask = obs['robot0_proprio-state'] < p0min
-            p0min[mask] = obs['robot0_proprio-state'][mask]
-            mask = obs['robot0_proprio-state'] > p0max
-            p0max[mask] = obs['robot0_proprio-state'][mask]
+            # mask = obs['robot0_proprio-state'] < p0min
+            # p0min[mask] = obs['robot0_proprio-state'][mask]
+            # mask = obs['robot0_proprio-state'] > p0max
+            # p0max[mask] = obs['robot0_proprio-state'][mask]
 
-            mask = obs['robot1_proprio-state'] < p1min
-            p1min[mask] = obs['robot1_proprio-state'][mask]
-            mask = obs['robot1_proprio-state'] > p1max
-            p1max[mask] = obs['robot1_proprio-state'][mask]
+            # mask = obs['robot1_proprio-state'] < p1min
+            # p1min[mask] = obs['robot1_proprio-state'][mask]
+            # mask = obs['robot1_proprio-state'] > p1max
+            # p1max[mask] = obs['robot1_proprio-state'][mask]
 
-            mask = obs['object-state'] < omin
-            omin[mask] = obs['object-state'][mask]
-            mask = obs['object-state'] > omax
-            omax[mask] = obs['object-state'][mask]
+            # mask = obs['object-state'] < omin
+            # omin[mask] = obs['object-state'][mask]
+            # mask = obs['object-state'] > omax
+            # omax[mask] = obs['object-state'][mask]
 
-            if i%2000==0:
-                print(i)
-                print('\n\n')
-                print(amin)
-                print(amax)
-                print('\n\n')
-                print(p0min)
-                print(p0max)
-                print('\n\n')
-                print(p1min)
-                print(p1max)
-                print('\n\n')
-                print(omin)
-                print(omax)
-                print('\n\n')
+            # if i%2000==0:
+            #     print(i)
+            #     print('\n\n')
+            #     print(amin)
+            #     print(amax)
+            #     print('\n\n')
+            #     print(p0min)
+            #     print(p0max)
+            #     print('\n\n')
+            #     print(p1min)
+            #     print(p1max)
+            #     print('\n\n')
+            #     print(omin)
+            #     print(omax)
+            #     print('\n\n')
 
             env.render()
