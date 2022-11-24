@@ -18,7 +18,7 @@ import tensorflow as tf
 from scripts.const import *
 from scripts.utils import *
 from scripts.rl.envPanda import *
-from scripts.rl.softActorCritic import *
+from scripts.rl.softActorCritic import softActorCritic
 
 
 ## Setup
@@ -29,12 +29,13 @@ tf.random.set_seed(SEED_TF)
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--i',     type=int,            help='Agent maximum training timesteps')
+parser.add_argument('--j',     type=int,            help='Agent maximum episode timesteps')
 parser.add_argument('--rbc',   type=int,            help='Replay buffer capacity')
 
 parser.add_argument('--ics',   type=float,          help='Agent initial_collect_steps ')
 parser.add_argument('--psi',   type=float,          help='Agent policy_save_interval')
-parser.add_argument('--ei',    type=float,          help='Agent evaluation_interval')
-parser.add_argument('--nee',   type=float,          help='Agent num_eval_episodes')
+parser.add_argument('--ei',    type=float,          help='Agent eval_interval')
+parser.add_argument('--nee',   type=int,            help='Agent num_eval_episodes')
 
 parser.add_argument('--n',     type=int,            help='batch_size & layer_params')
 parser.add_argument('--gamma', type=float,          help='Reward discount factor gamma')
@@ -44,8 +45,8 @@ parser.add_argument('--ilr',   type=float,          help='Initial learning rate'
 parser.add_argument('--dcr',   type=float,          help='Learning rate decay rate')
 parser.add_argument('--dcs',   type=int,            help='Learning rate decay steps interval')
 
-parser.add_argument('--dsoff', action='store_true', help='Turn off distributed strategy parallel processing')
 parser.add_argument('--temp',  action='store_true', help='Perform a temporary run which can be discarded')
+parser.add_argument('--dsoff', action='store_true', help='Turn off distributed strategy parallel processing')
 parser.add_argument('--resume',type=str,            help='Resume a previous training run')
 parser.add_argument('--text',  type=str,            help='Some text')
 
@@ -67,12 +68,12 @@ else:
 
     expPath = f'{modelsDir}/{exp}'
     if os.path.isdir(expPath) and not args.temp:
-            # raise Exception(f'"{exp}" already exists')
-            response = input(f'"{exp}" already exists. Overwrite? y/n\n').lower()
-            if not response=='y':
-                exit()
-                
-    os.system(f'rm -rf {expPath}')
+        # raise Exception(f'"{exp}" already exists')
+        response = input(f'"{exp}" already exists. Overwrite? y/n\n').lower()
+        if not response=='y':
+            exit()
+            
+    shutil.rmtree(expPath)
 
 modelPath = f'{expPath}/model'
 mkdirs(modelPath)
@@ -106,15 +107,15 @@ pl('\n\n\n#---------------Setup---------------#')
 
 ## Panda Environment Hyperparameters
 envParams = {
-    'i'               : args.i,
-    'gamma'           : args.gamma,
+    'max_episode_steps': args.j,
+    'gamma'            : args.gamma,
 }
 wjson(f'{varsPath}/envParams--{int(time.time())}.json', envParams)
 
 
 ## Soft Actor-Critic Hyperparameters
 sacParams = {
-    'max_iter_steps'                 : args.i,
+    'max_train_steps'                : args.i,
     'replay_buffer_capacity_steps'   : args.rbc,
     'initial_collect_steps'          : args.ics,
     'policy_save_interval_steps'     : args.psi,
@@ -147,19 +148,22 @@ sacParams = {
     'dataset_buffer_size'            : 50,
 
     'log_trigger_interval'           : 1000,
+
+    'max_to_keep'                    : 5000
 }
 wjson(f'{varsPath}/sacParams--{int(time.time())}.json', sacParams)
 
 
 ## Environment
 envCollect = envPanda(
-    envName    = 'envCollect',
-    params     = envParams
-
+    envName = 'envCollect',
+    params  = envParams,
+    eval    = False
 )
 envEval = envPanda(  
-    envName         = 'envEval',
-    params          = envParams,
+    envName = 'envEval',
+    params  = envParams,
+    eval    = True
 )
 
 
@@ -167,7 +171,7 @@ envEval = envPanda(
 distributed = True
 if args.dsoff:
     distributed = False
-pl('Note: DISTRIBUTED STRATEGY is currently TURNED OFF.\n')
+    pl('Note: DISTRIBUTED STRATEGY is currently TURNED OFF.\n')
 sacAgent = softActorCritic(
     envCollect  = envCollect,
     envEval     = envEval,

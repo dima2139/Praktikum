@@ -12,9 +12,17 @@ import reverb
 import datetime
 import pandas as pd
 import tensorflow as tf
-import tf_agents as tfa
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from tf_agents.agents.ddpg import critic_network
+from tf_agents.agents.sac import sac_agent, tanh_normal_projection_network
+from tf_agents.metrics import py_metrics
+from tf_agents.networks import actor_distribution_network
+from tf_agents.policies import py_tf_eager_policy, random_py_policy, policy_saver
+from tf_agents.replay_buffers import reverb_replay_buffer, reverb_utils
+from tf_agents.train import actor, learner, triggers
+from tf_agents.train.utils import spec_utils, train_utils, strategy_utils
+from tf_agents.utils import common
 
 from scripts.const import *
 from scripts.utils import *
@@ -27,7 +35,7 @@ tf.random.set_seed(SEED_TF)
 
 ## Class
 class softActorCritic:
-    def __init__(self, envCollect, envEval, params, modelPath, distributed=True, useGPU=True, useTPU=False):
+    def __init__(self, envCollect, envEval, params, modelPath, plotPath, distributed=True, useGPU=True, useTPU=False):
         '''
         Instantiate the Soft Actor-Critic.
         '''
@@ -36,10 +44,11 @@ class softActorCritic:
         ## Class Variables
         self.envCollect = envCollect
         self.envEval    = envEval
-        self.p = params
-        self.modelPath = modelPath
+        self.p          = params
+        self.modelPath  = modelPath
+        self.plotPath   = plotPath
         if distributed:
-            self.strategy = tfa.train.utils.strategy_utils(use_gpu=useGPU, tpu=useTPU)
+            self.strategy = strategy_utils.get_strategy(use_gpu=useGPU, tpu=useTPU)
         else:
             self.strategy = None
 
@@ -51,21 +60,21 @@ class softActorCritic:
             '''
 
 
-            observation_spec, action_spec, time_step_spec = tfa.train.utils.spec_utils.get_tensor_specs(self.envCollect)
+            observation_spec, action_spec, time_step_spec = spec_utils.get_tensor_specs(self.envCollect)
 
-            critic_net = tfa.networks.critic_network.CriticNetwork(
+            critic_net = critic_network.CriticNetwork(
                 input_tensor_spec       = (observation_spec, action_spec),
                 joint_fc_layer_params   = self.p['critic_joint_fc_layer_params'],
                 kernel_initializer      = self.p['kernel_initializer'],
                 last_kernel_initializer = self.p['kernel_initializer']            
             )
 
-            actor_net = tfa.networks.actor_distribution_network.ActorDistributionNetwork(
-                input_tensor_spec         = (observation_spec, action_spec),
+            actor_net = actor_distribution_network.ActorDistributionNetwork(
+                input_tensor_spec         = observation_spec,
                 output_tensor_spec        = action_spec,
                 fc_layer_params           = self.p['actor_fc_layer_params'],
-                continuous_projection_net = (tfa.sac.tanh_normal_projection_network.TanhNormalProjectionNetwork)
-                # dtype                     = np.float64
+                continuous_projection_net = (tanh_normal_projection_network.TanhNormalProjectionNetwork),
+                dtype                     = DTYPE
             )
 
             self.global_step = tf.compat.v1.train.get_or_create_global_step()
@@ -89,7 +98,7 @@ class softActorCritic:
             self.actor_optimizer  = tf.keras.optimizers.Adam(actor_learning_rate)
             self.alpha_optimizer  = tf.keras.optimizers.Adam(alpha_learning_rate)
 
-            self.agent = tfa.agents.sac.sac_agent.SacAgent(
+            self.agent = sac_agent.SacAgent(
                 time_step_spec       = time_step_spec,
                 action_spec          = action_spec,
                 critic_network       = critic_net,
@@ -134,16 +143,16 @@ class softActorCritic:
 
         self.reverb_server = reverb.Server([table])
 
-        self.reverb_replay_buffer = tfa.replay_buffers.reverb_replay_buffer.ReverbReplayBuffer(
-            data_spec = self.agent.collect_data_spec,
-            table_name = self.table_name,
+        self.reverb_replay_buffer = reverb_replay_buffer.ReverbReplayBuffer(
+            data_spec       = self.agent.collect_data_spec,
+            table_name      = self.table_name,
             sequence_length = self.p['replay_sequence_length'],
-            local_server = self.reverb_server
+            local_server    = self.reverb_server
         )
 
         reverb_replay_buffer_dataset = self.reverb_replay_buffer.as_dataset(
             sample_batch_size = self.p['batch_size'],
-            num_steps = self.p['dataset_num_steps']
+            num_steps         = self.p['dataset_num_steps']
         ).prefetch(self.p['dataset_buffer_size'])
 
         self.experience_dataset_fn = lambda: reverb_replay_buffer_dataset
@@ -151,33 +160,35 @@ class softActorCritic:
 
         ## Policies
         self.tf_eval_policy = self.agent.policy
-        self.eval_policy = tfa.policies.py_tf_eager_policy.PyTFEagerPolicy(
-            policy = self.tf_eval_policy,
+        self.eval_policy = py_tf_eager_policy.PyTFEagerPolicy(
+            policy          = self.tf_eval_policy,
             use_tf_function = True
         )
+
         self.tf_collect_policy = self.agent.policy
-        self.collect_policy = tfa.policies.py_tf_eager_policy.PyTFEagerPolicy(
-            policy = self.tf_collect_policy,
+        self.collect_policy = py_tf_eager_policy.PyTFEagerPolicy(
+            policy          = self.tf_collect_policy,
             use_tf_function = True
         )
-        self.tf_random_policy = tfa.policies.random_py_policy.RandomPyPolicy(
+
+        self.random_policy = random_py_policy.RandomPyPolicy(
             time_step_spec = self.envCollect.time_step_spec(),
-            action_spec = self.envCollect.action_spec()
+            action_spec    = self.envCollect.action_spec()
         )
 
 
         ## Actors
-        rb_observer = tfa.replay_buffers.reverb_utils.ReverbAddTrajectoryObserver(
-            py_client = self.reverb_replay_buffer.py_client,
-            table_name = self.table_name,
+        rb_observer = reverb_utils.ReverbAddTrajectoryObserver(
+            py_client       = self.reverb_replay_buffer.py_client,
+            table_name      = self.table_name,
             sequence_length = self.p['observer_sequence_length'],
-            stride_length = self.p['observer_stride_length']
+            stride_length   = self.p['observer_stride_length']
         )
 
 
         pl('\n\n\n#----------------------Initial Collect----------------------#')
         pl(f'Time: {datetime.datetime.now()}')
-        initial_collect_actor = tfa.train.actor.Actor(
+        initial_collect_actor = actor.Actor(
             env           = self.envCollect,
             policy        = self.random_policy,
             train_step    = self.global_step,
@@ -186,52 +197,51 @@ class softActorCritic:
         )
         initial_collect_actor.run()
 
-        env_step_metric = tfa.metrics.py_metrics.EnvironmentSteps()
+        env_step_metric = py_metrics.EnvironmentSteps()
 
-        collect_summary_dir = os.path.join(self.modelPath, tfa.train.learner.TRAIN_DIR)
+        collect_summary_dir = os.path.join(self.modelPath, learner.TRAIN_DIR)
 
-        collect_actor = tfa.train.actor.Actor(
+        collect_actor = actor.Actor(
             env           = self.envCollect,
             policy        = self.collect_policy,
             train_step    = self.global_step,
             steps_per_run = self.p['collect_actor_steps_per_run'],
-            metrics       = tfa.train.actor.collect_metrics([self.p['collect_actor_buffer_size']]),
+            metrics       = actor.collect_metrics(self.p['collect_actor_buffer_size']),
             summary_dir   = collect_summary_dir,
             observers     = [rb_observer, env_step_metric]
         )
 
         eval_summary_dir = os.path.join(self.modelPath, 'eval')
 
-        pl('\n\n\nIn terms of _funcs.\n\n\n')
-        eval_actor = tfa.train.actor.Actor(
-            env           = self.envEval,
-            policy        = self.eval_policy,
-            train_step    = self.global_step,
-            steps_per_run = self.p['num_eval_funcs'],
-            metrics       = tfa.train.actor.eval_metrics([self.p['num_eval_funcs']]),
-            summary_dir   = eval_summary_dir
+        eval_actor = actor.Actor(
+            env              = self.envEval,
+            policy           = self.eval_policy,
+            train_step       = self.global_step,
+            episodes_per_run = self.p['num_eval_episodes'],
+            metrics          = actor.eval_metrics(self.p['num_eval_episodes']),
+            summary_dir      = eval_summary_dir
         )
 
 
         ## Learners
         pl('\n\n\n#----------------------Policy Creation----------------------#')
         pl(f'Time: {datetime.datetime.now()}')
-        saved_model_dir = os.path.join(self.modelPath, tfa.train.learner.POLICY_SAVED_MODEL_DIR)
+        saved_model_dir = os.path.join(self.modelPath, learner.POLICY_SAVED_MODEL_DIR)
         learning_triggers = [
-            tfa.train.triggers.PolicySavedModelTrigger(
+            triggers.PolicySavedModelTrigger(
                 saved_model_dir = saved_model_dir,
                 agent           = self.agent,
                 train_step      = self.global_step,
                 interval        = self.p['policy_save_interval_steps']
             ),
-            tfa.train.triggers.StepPerSecondLogTrigger(
+            triggers.StepPerSecondLogTrigger(
                 train_step = self.global_step,
                 interval   = self.p['log_trigger_interval']
             )
         ]
 
         pl('\n\n\nThe agent already restores the checkpoint.\n\n\n')
-        agent_learner = tfa.train.learner.Learner(
+        agent_learner = learner.Learner(
             root_dir              = self.modelPath,
             train_step            = self.global_step,
             agent                 = self.agent,
@@ -243,7 +253,7 @@ class softActorCritic:
         
         ## Checkpointing
         bufferCheckpointDir = os.path.join(self.modelPath, 'bufferCheckpointer')
-        bufferCheckpointer = tfa.utils.common.Checkpointer(
+        bufferCheckpointer = common.Checkpointer(
             ckpt_dir      = bufferCheckpointDir,
             max_to_keep   = self.p['max_to_keep'],
             replay_buffer = self.reverb_replay_buffer
@@ -251,7 +261,7 @@ class softActorCritic:
         bufferCheckpointer.initialize_or_restore()
 
         agentCheckpointDir = os.path.join(self.modelPath, 'agentCheckpointer')
-        agentCheckpointer = tfa.utils.common.Checkpointer(
+        agentCheckpointer = common.Checkpointer(
             ckpt_dir      = agentCheckpointDir,
             max_to_keep   = self.p['max_to_keep'],
             agent         = self.agent,
@@ -262,7 +272,7 @@ class softActorCritic:
         agentCheckpointer.initialize_or_restore()
 
         policyDir = os.path.join(self.modelPath, 'policies', 'saved_policy')
-        policySaver = tfa.policies.policy_saver.PolicySaver(self.agent.policy)
+        policySaver = policy_saver.PolicySaver(self.agent.policy)
 
         self.global_step = tf.compat.v1.train.get_global_step()
 
@@ -281,61 +291,62 @@ class softActorCritic:
                 plt.close()
 
         
-        ## Training Loop
-        if resume:
-            perfTrain = lpkl(f'{self.modelsPath}/perfTrain.pkl')
-            perfEval  = lpkl(f'{self.modelsPath}/perfEval.pkl')
-        else:
-            perfTrain = pd.DataFrame(columns=['reward'])
-            perfEval  = pd.DataFrame(columns=['reward'])
+        # ## Training Loop
+        # if resume:
+        #     perfTrain = lpkl(f'{self.modelsPath}/perfTrain.pkl')
+        #     perfEval  = lpkl(f'{self.modelsPath}/perfEval.pkl')
+        # else:
+        #     perfTrain = pd.DataFrame(columns=['reward'])
+        #     perfEval  = pd.DataFrame(columns=['reward'])
 
-        for i in range(self.p['max_iter_steps']):
+        for i in range(self.p['max_train_steps']):
+            pl(i)
 
             # Training
             step = agent_learner.train_step_numpy
             collect_actor.run()
             loss_info = agent_learner.run(iterations=1)
 
-            # Logging
-            if self.envCollect.current_time_step().is_last():
-                # perfTrain.loc[step] = ??
-                # if len(perfTrain) > self.p['numfuncs_train'] and perfTrain.loc[step, 'TrainGBN'] < bestTrainGBN:
-                #     policySaver.save(f'{policyDir}_{step}')
+            # # Logging
+            # if self.envCollect.current_time_step().is_last():
+            #     # perfTrain.loc[step] = ??
+            #     # if len(perfTrain) > self.p['numfuncs_train'] and perfTrain.loc[step, 'TrainGBN'] < bestTrainGBN:
+            #     #     policySaver.save(f'{policyDir}_{step}')
 
-                # Evaluation
-                if i % self.p['eval_interval'] == 0:
-                    count = len(perfEval)
-                    pl(f'\n\n\n#---------------Evaluation Set {count} Start---------------#')
-                    pl(f'Time: {datetime.datetime.now()}')
+            # Evaluation
+            if i % self.p['eval_interval'] == 0:
+                # count = len(perfEval)
+                # pl(f'\n\n\n#---------------Evaluation Set {count} Start---------------#')
+                pl(f'Time: {datetime.datetime.now()}')
 
-                    eval_actor.run()
+                eval_actor.run()
 
-                    metrics = {}
-                    for metric in eval_actor.metrics:
-                        metrics[metric.name] = metric.result()
-                    # perfEval.loc[step] = ?
-                    # if perfEval.loc[step, 'EvalGBN'] < bestEvalGBN:
-                    #     policySaver.save(f'{policyDir}_{step}')
+                # metrics = {}
+                # for metric in eval_actor.metrics:
+                #     metrics[metric.name] = metric.result()
+                # # perfEval.loc[step] = ?
+                # # if perfEval.loc[step, 'EvalGBN'] < bestEvalGBN:
+                # #     policySaver.save(f'{policyDir}_{step}')
 
-                    bufferCheckpointer.save(global_step=self.global_step)
-                    agentCheckpointer.save(global_step=self.global_step)
+                bufferCheckpointer.save(global_step=self.global_step)
+                agentCheckpointer.save(global_step=self.global_step)
 
-                    pl(', '.join([
-                        f'Step = {step}',
-                        f'TrainReward = {perfTrain.loc[step, "reward"]:.6f}',
-                        f'EvalReward = {perfEval.loc[step, "reward"]:.6f}',
-                        f'LearningRate = {self.alpha_optimizer._decayed_lr("float32").numpy():.6f}',
-                        f'EvalAverageEpisodeLength = {metrics["AverageEpisodeLength"]:.6f}',
-                    ]))
+                # pl(', '.join([
+                #     f'Step = {step}',
+                #     f'TrainReward = {perfTrain.loc[step, "reward"]:.6f}',
+                #     f'EvalReward = {perfEval.loc[step, "reward"]:.6f}',
+                #     f'LearningRate = {self.alpha_optimizer._decayed_lr("float32").numpy():.6f}',
+                #     f'EvalAverageEpisodeLength = {metrics["AverageEpisodeLength"]:.6f}',
+                # ]))
 
-                    visualize(perfTrain, name='Training')
-                    visualize(perfEval,  name='Evaluation')
-                
-                    wpkl(f'{self.plotPath}/perfTrain.pkl', perfTrain)
-                    wpkl(f'{self.plotPath}/perfEval.pkl',  perfEval)
+                # visualize(perfTrain, name='Training')
+                # visualize(perfEval,  name='Evaluation')
+            
+                # wpkl(f'{self.plotPath}/perfTrain.pkl', perfTrain)
+                # wpkl(f'{self.plotPath}/perfEval.pkl',  perfEval)
 
-                    pl(f'#---------------Evaluation Set {count} End---------------#\n\n\n')
-                    pl(f'Time: {datetime.datetime.now()}')
+                # pl(f'#---------------Evaluation Set {count} End---------------#\n\n\n')
+                pl(f'Time: {datetime.datetime.now()}')
 
 
         rb_observer.close()
