@@ -11,6 +11,37 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true
-        }
+        },
+        {
+            "name": "trainAgent.py",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/rl/trainAgent.py",
+            "console": "integratedTerminal",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "args": [
+                "--i"    , "100000",
+                "--j"    , "100",
+
+                "--n"    , "256",
+                "--gamma", "0.99",
+                "--rsf"  , "1",
+
+                "--ilr"  , "0.0001",
+                "--dcr"  , "1",
+                "--dcs"  , "100",
+                
+                "--ics"  , "1",
+                "--psi"  , "1",
+                "--ei"   , "1",
+                "--nef"  , "1",
+                
+                // "--resume", "sac_j10",
+                "--vc",
+                // "--dsoff",
+                "--temp"
+            ],
+            "justMyCode": true
+        },
     ]
 }
