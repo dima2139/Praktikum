@@ -28,7 +28,6 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
         self._envName              = envName
         self._params               = params
         self._eval                 = eval
-        self._max_steps_per_action = 4
         self._episode_counter      = 0
 
         # SAC parameters
@@ -131,21 +130,17 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
 
         if self._success:
             action = np.zeros((12,))
-            if self._eval:
-                self._env.render()
         else:
-            action = np.rint(action * self._max_steps_per_action)
-            for n in range(int(max(abs(action)))):
-                pure_action = np.clip(action, -1, 1) * Amax
-                action[action<0] += 1
-                action[action>0] -= 1
-                obs, self._reward, done, info = self._env.step(pure_action)
-                if self._reward > 0.93:
-                    self._success = True
-                    break
-                self.setState(obs)
-                if self._eval:
-                    self._env.render()
+            action = np.rint(action) * Amax
+        
+        obs, self._reward, done, info = self._env.step(action)
+        self.setState(obs)
+        
+        if self._reward > 0.93:
+            self._success = True
+        
+        if self._eval:
+            self._env.render()
 
         self._episode_reward += self._reward
 
@@ -153,8 +148,6 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
 
             self._episode_ended   = True
             self._episode_counter += 1
-            # if self._eval:
-            #     self._env.close()
             
             pl(f'Episode {self._episode_counter} complete -- Episode reward: {self._episode_reward:.6f} -- Success: {self._success}')
             
