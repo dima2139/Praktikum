@@ -126,3 +126,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+7_SAC_minitaur_tutorial.ipynb
+7_SAC_minitaur_tutorial.py

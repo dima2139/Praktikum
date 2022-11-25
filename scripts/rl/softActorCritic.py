@@ -21,7 +21,7 @@ from tf_agents.networks import actor_distribution_network
 from tf_agents.policies import py_tf_eager_policy, random_py_policy, policy_saver
 from tf_agents.replay_buffers import reverb_replay_buffer, reverb_utils
 from tf_agents.train import actor, learner, triggers
-from tf_agents.train.utils import spec_utils, train_utils, strategy_utils
+from tf_agents.train.utils import spec_utils, strategy_utils
 from tf_agents.utils import common
 
 from scripts.const import *
@@ -271,82 +271,78 @@ class softActorCritic:
         )
         agentCheckpointer.initialize_or_restore()
 
-        policyDir = os.path.join(self.modelPath, 'policies', 'saved_policy')
+        policyDir   = os.path.join(self.modelPath, 'policies', 'saved_policy')
         policySaver = policy_saver.PolicySaver(self.agent.policy)
 
         self.global_step = tf.compat.v1.train.get_global_step()
 
 
-        ## Visualization
-        def visualize(perf, name):
-            '''
-            Visualize the Soft Actor-Critic.
-            '''
-            for col in perf.columns:
-                plt.plot(perf.index, perf[col])
-                plt.ylabel(col)
-                plt.xlabel('steps')
-                plt.title(name)
-                plt.savefig(f'{self.plotPath}/{name}_{col}.png')
-                plt.close()
+        # ## Visualization
+        # def visualize(data, name):
+        #     '''
+        #     Visualize the reward during training.
+        #     '''
+
+        #     plt.plot(data)
+        #     plt.ylabel('reward')
+        #     plt.xlabel('steps')
+        #     plt.title(name)
+        #     plt.savefig(f'{self.plotPath}/{name}.png')
+        #     plt.close()
 
         
-        # ## Training Loop
+        ## Training Loop
         # if resume:
-        #     perfTrain = lpkl(f'{self.modelsPath}/perfTrain.pkl')
-        #     perfEval  = lpkl(f'{self.modelsPath}/perfEval.pkl')
+        #     rewardTrain = lpkl(f'{self.modelsPath}/rewardTrain.pkl')
+        #     rewardEval  = lpkl(f'{self.modelsPath}/rewardEval.pkl')
         # else:
-        #     perfTrain = pd.DataFrame(columns=['reward'])
-        #     perfEval  = pd.DataFrame(columns=['reward'])
-
+        #     rewardTrain = []
+        #     rewardEval  = []
+        
+        count = 0
         for i in range(self.p['max_train_steps']):
-            pl(i)
+
 
             # Training
             step = agent_learner.train_step_numpy
             collect_actor.run()
             loss_info = agent_learner.run(iterations=1)
+            if self.envCollect.current_time_step().is_last():
+                # rewardTrain.append(self.envCollect.episode_reward())
+                # policySaver.save(f'{policyDir}_{step}')
 
-            # # Logging
-            # if self.envCollect.current_time_step().is_last():
-            #     # perfTrain.loc[step] = ??
-            #     # if len(perfTrain) > self.p['numfuncs_train'] and perfTrain.loc[step, 'TrainGBN'] < bestTrainGBN:
-            #     #     policySaver.save(f'{policyDir}_{step}')
+                # Evaluation`
+                if self.envCollect.episode_counter() % self.p['eval_interval'] == 0:
+                    count += 1#len(rewardEval)
+                    pl(f'\n\n\n#---------------Evaluation Set {count} Start---------------#')
+                    pl(f'Time: {datetime.datetime.now()}')
 
-            # Evaluation
-            if i % self.p['eval_interval'] == 0:
-                # count = len(perfEval)
-                # pl(f'\n\n\n#---------------Evaluation Set {count} Start---------------#')
-                pl(f'Time: {datetime.datetime.now()}')
+                    eval_actor.run()
 
-                eval_actor.run()
+                    metrics = {}
+                    for metric in eval_actor.metrics:
+                        metrics[metric.name] = metric.result()
+                    # rewardEval.append(self.envEval.episode_reward())
+                    policySaver.save(f'{policyDir}_{step}')
+                    bufferCheckpointer.save(global_step=self.global_step)
+                    agentCheckpointer.save(global_step=self.global_step)
 
-                # metrics = {}
-                # for metric in eval_actor.metrics:
-                #     metrics[metric.name] = metric.result()
-                # # perfEval.loc[step] = ?
-                # # if perfEval.loc[step, 'EvalGBN'] < bestEvalGBN:
-                # #     policySaver.save(f'{policyDir}_{step}')
+                    pl(', '.join([
+                        f'Step = {step}',
+                        # f'TrainReward = {rewardTrain[-1]:.6f}' if rewardTrain else '',
+                        # f'EvalReward = {rewardEval[-1]:.6f}',
+                        f'LearningRate = {self.alpha_optimizer._decayed_lr("float32").numpy():.6f}',
+                        f'EvalAverageEpisodeLength = {metrics["AverageEpisodeLength"]:.6f}',
+                    ]))
 
-                bufferCheckpointer.save(global_step=self.global_step)
-                agentCheckpointer.save(global_step=self.global_step)
+                    # visualize(rewardTrain, name='Training')
+                    # visualize(rewardEval,  name='Evaluation')
+                
+                    # wpkl(f'{self.plotPath}/rewardTrain.pkl', rewardTrain)
+                    # wpkl(f'{self.plotPath}/rewardEval.pkl',  rewardEval)
 
-                # pl(', '.join([
-                #     f'Step = {step}',
-                #     f'TrainReward = {perfTrain.loc[step, "reward"]:.6f}',
-                #     f'EvalReward = {perfEval.loc[step, "reward"]:.6f}',
-                #     f'LearningRate = {self.alpha_optimizer._decayed_lr("float32").numpy():.6f}',
-                #     f'EvalAverageEpisodeLength = {metrics["AverageEpisodeLength"]:.6f}',
-                # ]))
-
-                # visualize(perfTrain, name='Training')
-                # visualize(perfEval,  name='Evaluation')
-            
-                # wpkl(f'{self.plotPath}/perfTrain.pkl', perfTrain)
-                # wpkl(f'{self.plotPath}/perfEval.pkl',  perfEval)
-
-                # pl(f'#---------------Evaluation Set {count} End---------------#\n\n\n')
-                pl(f'Time: {datetime.datetime.now()}')
+                    pl(f'Time: {datetime.datetime.now()}')
+                    pl(f'#--`-------------Evaluation Set {count} End---------------#\n\n\n')
 
 
         rb_observer.close()

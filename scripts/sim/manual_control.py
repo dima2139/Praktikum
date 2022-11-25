@@ -96,7 +96,7 @@ if __name__ == "__main__":
             
             # Update last grasp
             last_grasp = grasp
-            print(grasp)
+            # print(grasp)
 
             # Fill out the rest of the action space if necessary
             rem_action_dim = env.action_dim - action.size

@@ -32,9 +32,9 @@ parser.add_argument('--i',     type=int,            help='Agent maximum training
 parser.add_argument('--j',     type=int,            help='Agent maximum episode timesteps')
 parser.add_argument('--rbc',   type=int,            help='Replay buffer capacity')
 
-parser.add_argument('--ics',   type=float,          help='Agent initial_collect_steps ')
-parser.add_argument('--psi',   type=float,          help='Agent policy_save_interval')
-parser.add_argument('--ei',    type=float,          help='Agent eval_interval')
+parser.add_argument('--ics',   type=float,          help='Agent initial_collect_steps')
+parser.add_argument('--psi',   type=float,          help='Agent policy_save_interval i.t.o. episodes')
+parser.add_argument('--ei',    type=float,          help='Agent eval_interval i.t.o. episodes')
 parser.add_argument('--nee',   type=int,            help='Agent num_eval_episodes')
 
 parser.add_argument('--n',     type=int,            help='batch_size & layer_params')
@@ -69,11 +69,14 @@ else:
     expPath = f'{modelsDir}/{exp}'
     if os.path.isdir(expPath) and not args.temp:
         # raise Exception(f'"{exp}" already exists')
-        response = input(f'"{exp}" already exists. Overwrite? y/n\n').lower()
-        if not response=='y':
+        response = input(f'"{exp}" already exists. Overwrite? [y]/n\n').lower()
+        if not response in ['y', '']:
             exit()
-            
-    shutil.rmtree(expPath)
+
+    try:
+        shutil.rmtree(expPath)
+    except:
+        pass
 
 modelPath = f'{expPath}/model'
 mkdirs(modelPath)
@@ -91,17 +94,19 @@ if args.resume:
             assert argsDict[k] == prevArgsDict[k]
 wjson(f'{varsPath}/args--{int(time.time())}.json', argsDict)
 
-shutil.copytree('scripts/', f'{expPath}/scripts/')
-
+try:
+    shutil.copytree('scripts/', f'{expPath}/scripts/')
+except:
+    pass # make that this reuses the old scripts upon resume
 
 ## Logging
 logging.getLogger().setLevel(logging.INFO)
 logFile = f'{expPath}/log--train--{int(time.time())}.log'
 logging.basicConfig(filename=logFile, format='%(message)s')
 if args.resume:
-    pl('\n\n\n###Continuing training...###\n')
+    pl('\n\n\n###Continuing training...###')
 else:
-    pl('####Soft Actor-Critic with the Actor-Learner API for Franka Emika Panda####\n\n\n')
+    pl('\n\n\n###Soft Actor-Critic with the Actor-Learner API for Franka Emika Panda###')
 pl('\n\n\n#---------------Setup---------------#')
 
 
