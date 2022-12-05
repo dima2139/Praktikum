@@ -28,7 +28,7 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
         self._envName              = envName
         self._params               = params
         self._eval                 = eval
-        self._max_steps_per_action = 4
+        self._max_steps_per_action = 10
         self._episode_counter      = 0
 
         # SAC parameters
@@ -70,7 +70,7 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
                 ignore_done            = True,
                 use_camera_obs         = False,
                 reward_shaping         = True,
-                control_freq           = 20,
+                control_freq           = 120,
                 hard_reset             = False,
             )
             cam_id = 0
@@ -84,7 +84,7 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
                 ignore_done            = True,
                 use_camera_obs         = False,
                 reward_shaping         = True,
-                control_freq           = 20,
+                control_freq           = 120,
                 hard_reset             = False,
             )
         
@@ -98,11 +98,13 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
             obs['robot0_proprio-state'],
             obs['robot1_proprio-state'],
             obs['object-state']
-        ))
+        ), dtype=DTYPE)
 
-        self._state = np.divide(obs_concat, Omax, dtype=DTYPE)
+        self._state = obs_concat
 
-        assert np.max(np.abs(self._state)) <= 1.0, f'{obs_concat[np.argmax(np.abs(self._state))]} at index {np.argmax(np.abs(self._state))}'
+        # self._state = np.divide(obs_concat, Omax, dtype=DTYPE)
+
+        # assert np.max(np.abs(self._state)) <= 1.0, f'{obs_concat[np.argmax(np.abs(self._state))]} at index {np.argmax(np.abs(self._state))}'
 
     
     def _reset(self):
@@ -136,11 +138,11 @@ class envPanda(tfa.environments.py_environment.PyEnvironment):
         else:
             action = np.rint(action * self._max_steps_per_action)
             for n in range(int(max(abs(action)))):
-                pure_action = np.clip(action, -1, 1) * Amax
+                pure_action = np.clip(action, -1, 1)# * Amax
                 action[action<0] += 1
                 action[action>0] -= 1
                 obs, self._reward, done, info = self._env.step(pure_action)
-                if self._reward > 0.93:
+                if self._reward > 0.9:
                     self._success = True
                     break
                 self.setState(obs)

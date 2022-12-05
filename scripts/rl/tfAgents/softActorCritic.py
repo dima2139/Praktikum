@@ -241,6 +241,8 @@ class softActorCritic:
         ]
 
         pl('\n\n\nThe agent already restores the checkpoint.\n\n\n')
+        pl('\n\n\nCurrently, using more timesteps per timestep is neither better nor worse, which is worse\n\n\n')
+
         agent_learner = learner.Learner(
             root_dir              = self.modelPath,
             train_step            = self.global_step,

@@ -148,4 +148,4 @@ if __name__ == "__main__":
             #     print(omax)
             #     print('\n\n')
 
-            env.render()
+5            env.render()
