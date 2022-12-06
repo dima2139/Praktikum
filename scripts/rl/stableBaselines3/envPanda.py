@@ -10,7 +10,7 @@ class envPanda(gym.Env):
     def __init__(self):
         super(envPanda, self).__init__()
         
-        self.action_space = spaces.Discrete(6)
+        self.action_space = spaces.Discrete(12)
 
         self.observation_space = spaces.Box(
             low   = -1,
