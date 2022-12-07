@@ -4,6 +4,8 @@ import robosuite
 from stable_baselines3.common.env_checker import check_env
 from scripts.const import *
 
+from scripts.utils import *
+
 class envPanda(gym.Env):
     metadata = {"render.modes": ["human"]}
 
@@ -18,8 +20,8 @@ class envPanda(gym.Env):
 
         # Set of 7 actions per robot: 6 actions for 6 joints, 1 action to do nothing
         self.action_space = spaces.MultiDiscrete(
-            nvec = [7]
-            # nvec = [7,7]
+            nvec = [7,7]
+            # nvec = [7]
         ) 
 
         self.observation_space = spaces.Box(
@@ -32,10 +34,10 @@ class envPanda(gym.Env):
         controller_config = robosuite.load_controller_config(default_controller="OSC_POSE")
 
         config = {
-            "env_name"          : "TwoArmPegInHole",
-            "robots"            : ["Panda", "Panda"],
-            "controller_configs": controller_config,
-            "env_configuration" : "single-arm-opposed",
+            "env_name"             : "TwoArmPegInHole",
+            "robots"               : ["Panda", "Panda"],
+            "controller_configs"   : controller_config,
+            "env_configuration"    : "single-arm-opposed",
         }
 
         self.env = robosuite.make(
@@ -48,6 +50,7 @@ class envPanda(gym.Env):
             reward_shaping         = True,
             control_freq           = 20,
             hard_reset             = False,
+            initialization_noise   = {'type': 'gaussian', 'magnitude': 0.5}
         )
 
 
@@ -64,16 +67,16 @@ class envPanda(gym.Env):
     
     def step(self, action):
         action_peg = np.zeros((7,))
-        # action_peg[action[0]] = 1
+        action_peg[action[0]] = 1
         action_peg = action_peg[:6] * Amax
 
         action_hole = np.zeros((7,))
-        action_hole[action[0]] = 1
-        # action_hole[action[1]] = 1
+        # action_hole[action[0]] = 1
+        action_hole[action[1]] = 1
         action_hole = action_hole[:6] * Amax
 
         action_combined = np.concatenate((action_peg, action_hole))
-        # print(action_combined)
+        # pl(action_combined)
 
         if self.success:
             action_combined = np.zeros(12)
@@ -86,7 +89,7 @@ class envPanda(gym.Env):
         reward = self.set_reward(reward)
         done   = self.set_done(observation, reward, done, info)
         info   = self.set_info(info)
-        if self.evalEnv or self.num_elapsed_episodes%25==0:
+        if self.evalEnv or self.num_elapsed_episodes%1==0:
         # if self.evalEnv:
             self.render()
 
@@ -103,19 +106,19 @@ class envPanda(gym.Env):
     def set_done(self, observation, reward, done, info):
 
         if done:
-            print('\n\n\nDONE!')
-            print('observation')
-            print(observation)
-            print('reward')
-            print(reward)
-            print('done')
-            print(done)
-            print('info')
-            print(info)
-            print('\n\n\n')
+            pl('\n\n\nDONE!')
+            pl('observation')
+            pl(observation)
+            pl('reward')
+            pl(reward)
+            pl('done')
+            pl(done)
+            pl('info')
+            pl(info)
+            pl('\n\n\n')
         
         if self.i == self.max_episode_len:
-            print(f'{self.envType} episode {self.num_elapsed_episodes}  --  episode reward: {self.episode_reward}')
+            pl(f'{self.envType} episode {self.num_elapsed_episodes}  --  episode reward: {self.episode_reward}')
             done   = True
             self.num_elapsed_episodes += 1
         else:
@@ -131,7 +134,7 @@ class envPanda(gym.Env):
     
     def reset(self):
         # if self.evalEnv:
-        #     print(5)
+        #     pl(5)
         
         observation = self.env.reset()
         observation = self.set_observation(observation)

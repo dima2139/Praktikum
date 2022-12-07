@@ -1,6 +1,14 @@
+import logging
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
 from scripts.rl.stableBaselines3.envPanda import envPanda
+
+from scripts.utils import *
+
+## Logging
+logging.getLogger().setLevel(logging.INFO)
+logFile = f'train.log'
+logging.basicConfig(filename=logFile, format='%(message)s')
 
 # env_cartpole   = make_vec_env("CartPole-v1", n_envs=1)
 # model_cartpole = PPO("MlpPolicy", env_cartpole, verbose=1)
@@ -14,7 +22,7 @@ from scripts.rl.stableBaselines3.envPanda import envPanda
 #     obs_cartpole, rewards_cartpole, dones_cartpole, info_cartpole = env_cartpole.step(action_cartpole)
 #     env_cartpole.render()
 
-print('Check if continuous observation works with PPO')
+pl('Check if continuous observation works with PPO')
 
 envTrain = envPanda()
 envEval  = envPanda(evalEnv=True)
@@ -47,12 +55,12 @@ ppo = PPO(
 )
 
 ppo.learn(
-    total_timesteps     = 300000,
+    total_timesteps     = 350000,
     callback            = None,
     log_interval        = 1,
     eval_env            = envEval,
-    eval_freq           = 250 * 12,
-    n_eval_episodes     = 4,
+    eval_freq           = 250 * 15,
+    n_eval_episodes     = 3,
     tb_log_name         = 'PPO',
     eval_log_path       = 'logs',
     reset_num_timesteps = True,
@@ -67,6 +75,6 @@ ppo = PPO.load("ppo_panda")
 obs_panda         = envTrain.reset()
 for i in range(5000):
     action_panda, _states_panda = ppo.predict(obs_panda)
-    print(action_panda)
+    pl(action_panda)
     obs_panda, rewards_panda, dones_panda, info_panda = envTrain.step(action_panda)
     envTrain.render()
