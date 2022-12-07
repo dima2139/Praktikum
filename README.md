@@ -57,6 +57,11 @@ cd robosuite
 pip install -r requirements.txt
 python -m robosuite.demos.demo_random_action
 ```
+* If error `No such file or directory`:
+```
+python ~/anaconda3/envs/smlr/lib/python3.9/site-packages/robosuite/scripts/setup_macros.py 
+```
+
 * Context: https://robosuite.ai/docs/installation.html
 
 

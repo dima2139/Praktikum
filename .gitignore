@@ -1,6 +1,7 @@
 # daniel-v-e
 misc/*
 models/*
+logs/*
 *.pyc
 
 # C extensions

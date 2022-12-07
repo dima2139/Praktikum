@@ -108,7 +108,8 @@ if __name__ == "__main__":
                     action = np.concatenate([action, rem_action])
                 else:
                     action = np.concatenate([rem_action, action])
-                
+            
+            print(action)
             # p2Step through the simulation and render
             obs, reward, done, info = env.step(action)
 
@@ -148,4 +149,4 @@ if __name__ == "__main__":
             #     print(omax)
             #     print('\n\n')
 
-5            env.render()
+            env.render()

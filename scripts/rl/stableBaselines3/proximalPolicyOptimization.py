@@ -16,14 +16,57 @@ from scripts.rl.stableBaselines3.envPanda import envPanda
 
 print('Check if continuous observation works with PPO')
 
-env_panda   = envPanda()
-model_panda = PPO("MlpPolicy", env_panda, verbose=1)
-model_panda.learn(total_timesteps=400000, progress_bar=True)
-model_panda.save("ppo_panda")
-del model_panda
-model_panda = PPO.load("ppo_panda")
-obs_panda         = env_panda.reset()
+envTrain = envPanda()
+envEval  = envPanda()
+
+ppo = PPO(
+      policy              = 'MlpPolicy',
+      env                 = envTrain,
+      learning_rate       = 0.0003,
+      n_steps             = 2048,
+      batch_size          = 64,
+      n_epochs            = 10,
+      gamma               = 0.99,
+      gae_lambda          = 0.95,
+      clip_range          = 0.2,
+      clip_range_vf       = None,
+      normalize_advantage = True,
+      ent_coef            = 0,
+      vf_coef             = 0.5,
+      max_grad_norm       = 0.5,
+      use_sde             = False,
+      sde_sample_freq     = -1,
+      target_kl           = None,
+      tensorboard_log     = None,
+      create_eval_env     = False,
+      policy_kwargs       = None,
+      verbose             = 1,
+      seed                = None,
+      device              = 'cuda',
+      _init_setup_model   = True
+)
+
+ppo.learn(
+    total_timesteps     = 400000,
+    callback            = None,
+    log_interval        = 1,
+    eval_env            = envEval,
+    eval_freq           = 30,
+    n_eval_episodes     = 5,
+    tb_log_name         = 'PPO',
+    eval_log_path       = 'logs',
+    reset_num_timesteps = True,
+    progress_bar        = True
+)
+
+ppo.save("ppo_panda")
+
+del ppo
+
+ppo = PPO.load("ppo_panda")
+obs_panda         = envTrain.reset()
 for i in range(5000):
-    action_panda, _states_panda = model_panda.predict(obs_panda)
-    obs_panda, rewards_panda, dones_panda, info_panda = env_panda.step(action_panda)
-    env_panda.render()
+    action_panda, _states_panda = ppo.predict(obs_panda)
+    print(action_panda)
+    obs_panda, rewards_panda, dones_panda, info_panda = envTrain.step(action_panda)
+    envTrain.render()
