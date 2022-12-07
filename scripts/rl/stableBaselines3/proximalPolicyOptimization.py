@@ -17,7 +17,7 @@ from scripts.rl.stableBaselines3.envPanda import envPanda
 print('Check if continuous observation works with PPO')
 
 envTrain = envPanda()
-envEval  = envPanda()
+envEval  = envPanda(evalEnv=True)
 
 ppo = PPO(
       policy              = 'MlpPolicy',
@@ -47,12 +47,12 @@ ppo = PPO(
 )
 
 ppo.learn(
-    total_timesteps     = 400000,
+    total_timesteps     = 200000,
     callback            = None,
     log_interval        = 1,
     eval_env            = envEval,
-    eval_freq           = 30,
-    n_eval_episodes     = 5,
+    eval_freq           = 2000,
+    n_eval_episodes     = 2,
     tb_log_name         = 'PPO',
     eval_log_path       = 'logs',
     reset_num_timesteps = True,

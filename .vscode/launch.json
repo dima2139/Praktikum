@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
 
+
         {
             "name": "Python: Current File",
             "type": "python",
@@ -23,6 +24,44 @@
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
             "justMyCode": true
+        },
+    
+        {
+            "name": "demo_device_control",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/sim/demo_device_control.py",
+            "console": "integratedTerminal",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "justMyCode": true,
+            "args": [
+                "--environment"  , "TwoArmPegInHole",
+                "--robots"       , "Panda", "Panda",
+                "--config"       , "single-arm-opposed",
+                "--arm"          , "right",
+                "--controller"   , "osc",
+                "--device"       , "keyboard",
+                "--switch-on-grasp"
+            ]
+        },
+    
+        {
+            "name": "collect_human_demonstrations",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/mimic/collect_human_demonstrations.py",
+            "console": "integratedTerminal",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "justMyCode": true,
+            "args": [
+                "--directory"    , "models/mimic",
+                "--environment"  , "TwoArmPegInHole",
+                "--robots"       , "Panda", "Panda",
+                "--arm"          , "right",
+                "--config"       , "single-arm-opposed",
+                "--controller"   , "OSC_POSE",
+                "--device"       , "keyboard"
+            ]
         },
     
         {

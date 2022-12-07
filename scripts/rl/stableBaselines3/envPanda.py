@@ -7,14 +7,20 @@ from scripts.const import *
 class envPanda(gym.Env):
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self):
+    def __init__(self, evalEnv=False):
         super(envPanda, self).__init__()
 
-        self.max_episode_len = 100
-        self.episode_reward  = 0
+        self.num_elapsed_episodes = 1
+        self.max_episode_len      = 100
+        self.evalEnv              = evalEnv
+        self.envType              = 'Evaluation' if evalEnv else 'Training'
+
 
         # Set of 7 actions per robot: 6 actions for 6 joints, 1 action to do nothing
-        self.action_space = spaces.MultiDiscrete(nvec = [7,7]) 
+        self.action_space = spaces.MultiDiscrete(
+            nvec = [7]
+            # nvec = [7,7]
+        ) 
 
         self.observation_space = spaces.Box(
             low   = -1,
@@ -58,11 +64,12 @@ class envPanda(gym.Env):
     
     def step(self, action):
         action_peg = np.zeros((7,))
-        action_peg[action[0]] = 1
+        # action_peg[action[0]] = 1
         action_peg = action_peg[:6] * Amax
 
         action_hole = np.zeros((7,))
-        action_hole[action[1]] = 1
+        action_hole[action[0]] = 1
+        # action_hole[action[1]] = 1
         action_hole = action_hole[:6] * Amax
 
         action_combined = np.concatenate((action_peg, action_hole))
@@ -76,10 +83,12 @@ class envPanda(gym.Env):
         reward = self.set_reward(reward)
         
 
-        reward = set_reward(reward)
-        done   = set_done(observation, reward, done, info)
-        info   = set_info(info)
-        render()
+        reward = self.set_reward(reward)
+        done   = self.set_done(observation, reward, done, info)
+        info   = self.set_info(info)
+        if self.evalEnv or self.num_elapsed_episodes%10==0:
+        # if self.evalEnv:
+            self.render()
 
         return observation, reward, done, info
     
@@ -106,27 +115,29 @@ class envPanda(gym.Env):
             print('\n\n\n')
         
         if self.i == self.max_episode_len:
-            print('Episode is done:')
+            print(f'{self.envType} episode {self.num_elapsed_episodes}  --  episode reward: {self.episode_reward}')
             done   = True
+            self.num_elapsed_episodes += 1
         else:
             self.i += 1
             self.episode_reward += reward
         
-        return np.array([done]) 
+        return done#np.array([done]) 
 
 
     def set_info(self, info):
-        return [info]
+        return info#[info]
 
     
     def reset(self):
+        # if self.evalEnv:
+        #     print(5)
+        
         observation = self.env.reset()
         observation = self.set_observation(observation)
-        print(self.episode_reward)
         self.episode_reward = 0
-        self.success        = False
         self.i              = 1
-
+        self.success        = False
 
         return observation
 
