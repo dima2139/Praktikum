@@ -57,7 +57,7 @@
                 "--directory"    , "models/mimic",
                 "--environment"  , "TwoArmPegInHole",
                 "--robots"       , "Panda", "Panda",
-                "--arm"          , "right",
+                "--arm"          , "left",
                 "--config"       , "single-arm-opposed",
                 "--controller"   , "OSC_POSE",
                 "--device"       , "keyboard"
@@ -73,7 +73,7 @@
             "env": {"PYTHONPATH": "${workspaceRoot}"},
             "justMyCode": true,
             "args": [
-                "--folder"       , "/home/dve/Desktop/g2-peg-in-hole/models/mimic/1670434512_0116363",
+                "--folder"       , "/home/dve/Desktop/g2-peg-in-hole/models/mimic/1670435937_9663997",
                 "--use-actions"
             ]
         },

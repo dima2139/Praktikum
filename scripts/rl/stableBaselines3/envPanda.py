@@ -11,7 +11,7 @@ class envPanda(gym.Env):
         super(envPanda, self).__init__()
 
         self.num_elapsed_episodes = 1
-        self.max_episode_len      = 100
+        self.max_episode_len      = 250
         self.evalEnv              = evalEnv
         self.envType              = 'Evaluation' if evalEnv else 'Training'
 
@@ -86,7 +86,7 @@ class envPanda(gym.Env):
         reward = self.set_reward(reward)
         done   = self.set_done(observation, reward, done, info)
         info   = self.set_info(info)
-        if self.evalEnv or self.num_elapsed_episodes%10==0:
+        if self.evalEnv or self.num_elapsed_episodes%25==0:
         # if self.evalEnv:
             self.render()
 

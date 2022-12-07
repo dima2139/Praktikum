@@ -47,12 +47,12 @@ ppo = PPO(
 )
 
 ppo.learn(
-    total_timesteps     = 200000,
+    total_timesteps     = 300000,
     callback            = None,
     log_interval        = 1,
     eval_env            = envEval,
-    eval_freq           = 2000,
-    n_eval_episodes     = 2,
+    eval_freq           = 250 * 12,
+    n_eval_episodes     = 4,
     tb_log_name         = 'PPO',
     eval_log_path       = 'logs',
     reset_num_timesteps = True,

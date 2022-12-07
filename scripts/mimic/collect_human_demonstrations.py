@@ -92,7 +92,9 @@ def collect_human_trajectory(env, device, arm, env_configuration):
             break
 
         # Run environment step
-        env.step(action)
+        if action.sum():
+            env.step(action)
+            
         env.render()
 
         # Also break if we complete the task
