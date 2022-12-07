@@ -65,6 +65,20 @@
         },
     
         {
+            "name": "playback_demonstrations_from_hdf5",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/mimic/playback_demonstrations_from_hdf5.py",
+            "console": "integratedTerminal",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "justMyCode": true,
+            "args": [
+                "--folder"       , "/home/dve/Desktop/g2-peg-in-hole/models/mimic/1670434512_0116363",
+                "--use-actions"
+            ]
+        },
+    
+        {
             "name": "trainAgent.py",
             "type": "python",
             "request": "launch",

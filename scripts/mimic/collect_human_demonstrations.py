@@ -35,6 +35,10 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         env_configuration (str): specified environment configuration
     """
 
+
+    # Initialize variables that should the maintained between resets
+    last_grasp = 0
+
     env.reset()
 
     # ID = 2 always corresponds to agentview
@@ -54,6 +58,34 @@ def collect_human_trajectory(env, device, arm, env_configuration):
         action, grasp = input2action(
             device=device, robot=active_robot, active_arm=arm, env_configuration=env_configuration
         )
+
+        # If the current grasp is active (1) and last grasp is not (-1) (i.e.: grasping input just pressed),
+        # toggle arm control and / or camera viewing angle if requested
+        if last_grasp < 0 < grasp:
+            args.arm = "left" if args.arm == "right" else "right"
+        
+        # Update last grasp
+        last_grasp = grasp
+
+        # Fill out the rest of the action space if necessary
+        rem_action_dim = env.action_dim - action.size
+        if rem_action_dim > 0:
+            # Initialize remaining action space
+            rem_action = np.zeros(rem_action_dim)
+            # This is a multi-arm setting, choose which arm to control and fill the rest with zeros
+            if args.arm == "right":
+                action = np.concatenate([action, rem_action])
+            elif args.arm == "left":
+                action = np.concatenate([rem_action, action])
+            else:
+                # Only right and left arms supported
+                print(
+                    "Error: Unsupported arm specified -- "
+                    "must be either 'right' or 'left'! Got: {}".format(args.arm)
+                )
+        elif rem_action_dim < 0:
+            # We're in an environment with no gripper action space, so trim the action space to be the action dim
+            action = action[: env.action_dim]
 
         # If action is none, then this a reset so we should break
         if action is None:
