@@ -1,0 +1,112 @@
+-e git+https://github.com/mihdalal/raps.git@1c56b0fe367cc32d3ee548f407ac3a9af9e3ce2e#egg=a2c_ppo_acktr&subdirectory=pytorch-a2c-ppo-acktr-gail
+absl-py==1.3.0
+ale-py==0.7.4
+astunparse==1.6.3
+AutoROM==0.4.2
+AutoROM.accept-rom-license==0.4.2
+brotlipy==0.7.0
+cachetools==5.2.0
+certifi @ file:///croot/certifi_1665076670883/work/certifi
+cffi @ file:///tmp/build/80754af9/cffi_1669355733693/work
+charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
+click==8.1.3
+cloudpickle==2.2.0
+commonmark==0.9.1
+contourpy==1.0.6
+cryptography @ file:///croot/cryptography_1665612644927/work
+cycler==0.11.0
+Cython==0.29.32
+-e git+https://github.com/mihdalal/raps.git@1c56b0fe367cc32d3ee548f407ac3a9af9e3ce2e#egg=d4rl&subdirectory=d4rl
+dm-control==1.0.0
+dm-env==1.5
+dm-tree==0.1.7
+-e git+https://github.com/mihdalal/raps.git@1c56b0fe367cc32d3ee548f407ac3a9af9e3ce2e#egg=doodad&subdirectory=doodad
+evdev==1.6.0
+fasteners==0.18
+Flask==2.1.2
+flatbuffers==1.12
+flit_core @ file:///opt/conda/conda-bld/flit-core_1644941570762/work/source/flit_core
+fonttools==4.38.0
+future==0.18.2
+gast==0.4.0
+glfw==2.5.5
+google-auth==2.15.0
+google-auth-oauthlib==0.4.6
+google-pasta==0.2.0
+grpcio==1.51.1
+gym==0.21.0
+h5py==3.7.0
+idna @ file:///croot/idna_1666125576474/work
+imageio==2.22.4
+importlib-metadata==4.13.0
+importlib-resources==5.10.0
+itsdangerous==2.1.2
+Jinja2==3.1.2
+keras==2.9.0
+Keras-Preprocessing==1.1.2
+kiwisolver==1.4.4
+labmaze==1.0.6
+libclang==14.0.6
+llvmlite==0.39.1
+lxml==4.9.1
+Markdown==3.4.1
+MarkupSafe==2.1.1
+matplotlib==3.3.4
+mjrl @ git+https://github.com/aravindr93/mjrl@3871d93763d3b49c4741e6daeaebbc605fe140dc
+mkl-fft==1.3.1
+mkl-random @ file:///tmp/build/80754af9/mkl_random_1626186066731/work
+mkl-service==2.4.0
+mujoco==2.3.0
+mujoco-py==2.1.2.14
+numba==0.56.4
+numpy==1.21.6
+oauthlib==3.2.2
+opencv-python==4.6.0.66
+opt-einsum==3.3.0
+packaging==21.3
+pandas==1.5.2
+Pillow==9.2.0
+plotly==4.0.0
+protobuf==3.19.6
+psutil==5.9.4
+pyasn1==0.4.8
+pyasn1-modules==0.2.8
+pybullet==3.2.5
+pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
+Pygments==2.13.0
+pynput==1.7.6
+PyOpenGL==3.1.6
+pyOpenSSL @ file:///opt/conda/conda-bld/pyopenssl_1643788558760/work
+pyparsing==2.4.7
+PySocks @ file:///tmp/build/80754af9/pysocks_1605305812635/work
+python-dateutil==2.8.2
+python-xlib==0.32
+pytz==2022.6
+-e git+https://github.com/mihdalal/raps.git@1c56b0fe367cc32d3ee548f407ac3a9af9e3ce2e#egg=rad&subdirectory=rad
+requests @ file:///opt/conda/conda-bld/requests_1657734628632/work
+requests-oauthlib==1.3.1
+retrying==1.3.4
+rich==12.6.0
+-e git+https://github.com/mihdalal/raps.git@1c56b0fe367cc32d3ee548f407ac3a9af9e3ce2e#egg=rlkit&subdirectory=rlkit
+robosuite==1.4.0
+rsa==4.9
+scipy==1.9.3
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+stable-baselines3==1.6.2
+tensorboard==2.9.1
+tensorboard-data-server==0.6.1
+tensorboard-plugin-wit==1.8.1
+tensorflow==2.9.3
+tensorflow-estimator==2.9.0
+tensorflow-io-gcs-filesystem==0.28.0
+termcolor==2.1.1
+torch==1.13.0
+torchaudio==0.13.0
+torchvision==0.14.0
+tqdm==4.64.1
+typing_extensions @ file:///croot/typing_extensions_1669924550328/work
+urllib3 @ file:///croot/urllib3_1666298941550/work
+-e git+https://github.com/mihdalal/raps.git@1c56b0fe367cc32d3ee548f407ac3a9af9e3ce2e#egg=viskit&subdirectory=viskit
+Werkzeug==2.2.2
+wrapt==1.14.1
+zipp==3.11.0
