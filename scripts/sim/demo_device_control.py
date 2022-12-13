@@ -100,17 +100,16 @@ import numpy as np
 
 import robosuite as suite
 from robosuite import load_controller_config
-from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
+from robosuite.utils.input_utils import input2action
+from scripts.rl.stableBaselines3.setJoints import set_joints
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Lift")
     parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
-    parser.add_argument(
-        "--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary"
-    )
+    parser.add_argument("--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary")
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
     parser.add_argument("--toggle-camera-on-grasp", action="store_true", help="Switch camera angle on gripper action")
@@ -148,14 +147,14 @@ if __name__ == "__main__":
     # Create environment
     env = suite.make(
         **config,
-        has_renderer=True,
-        has_offscreen_renderer=False,
-        render_camera="agentview",
-        ignore_done=True,
-        use_camera_obs=False,
-        reward_shaping=True,
-        control_freq=20,
-        hard_reset=False,
+        has_renderer           = True,
+        has_offscreen_renderer = False,
+        render_camera          = "agentview",
+        ignore_done            = True,
+        use_camera_obs         = False,
+        reward_shaping         = True,
+        control_freq           = 20,
+        hard_reset             = False,
     )
 
     # Wrap this environment in a visualization wrapper
@@ -180,9 +179,10 @@ if __name__ == "__main__":
     while True:
         # Reset the environment
         obs = env.reset()
-        # env.robots[0].reset(deterministic=True)
-        # env.robots[1].reset(deterministic=True)
-        # env.robots[0].set_robot_joint_positions(np.array([0.4, 0.6, 0.5, 0.4, 0.6, 0.5, 0.1]))
+        env.robots[0].reset(deterministic=True)
+        env.robots[1].reset(deterministic=True)
+        env.robots[0].set_robot_joint_positions(set_joints(free_joints=1))
+        env.robots[1].set_robot_joint_positions(set_joints(free_joints=1))
 
         # Setup rendering
         cam_id = 0
@@ -200,9 +200,7 @@ if __name__ == "__main__":
             active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
 
             # Get the newest action
-            action, grasp = input2action(
-                device=device, robot=active_robot, active_arm=args.arm, env_configuration=args.config
-            )
+            action, grasp = input2action(device=device, robot=active_robot, active_arm=args.arm, env_configuration=args.config)
 
             # If action is none, then this a reset so we should break
             if action is None:
@@ -241,5 +239,5 @@ if __name__ == "__main__":
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
-            print(reward)
+            # print(reward)
             env.render()
