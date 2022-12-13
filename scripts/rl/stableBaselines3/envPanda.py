@@ -79,16 +79,16 @@ class envPanda(gym.Env):
         action_combined = np.concatenate((action_peg, action_hole))
         # pl(action_combined)
 
-        if self.success:
-            action_combined = np.zeros(12)
+        # if self.success:
+        #     action_combined = np.zeros(12)
 
         observation, absolute_reward, done, info = self.env.step(action_combined)
         observation = self.set_observation(observation)
         reward      = self.set_reward(absolute_reward)
         done        = self.set_done(observation, reward, done, info)
         info        = self.set_info(info)
-        # if self.evalEnv or self.num_elapsed_episodes%1==0:
-        self.render()
+        if self.evalEnv or self.num_elapsed_episodes%10==0:
+            self.render()
 
         return observation, reward, done, info
     
@@ -97,18 +97,16 @@ class envPanda(gym.Env):
         if self.best_reward is False:
             reward = 0
             self.best_reward = absolute_reward
+        
+        if absolute_reward > 0.93:
+            reward = (absolute_reward - self.best_reward) * 10
         else:
             reward = absolute_reward - self.best_reward
         
         if absolute_reward > self.best_reward:
             self.best_reward = absolute_reward
-
-        if absolute_reward > 0.93:
-            self.success = True
     
         # print(reward)
-        if self.success:
-            reward = 1
 
         return reward
 
@@ -148,7 +146,7 @@ class envPanda(gym.Env):
         self.episode_reward = 0
         self.best_reward    = False
         self.i              = 1
-        self.success        = False
+        # self.success        = False
 
         return observation
 

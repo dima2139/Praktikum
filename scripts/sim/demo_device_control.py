@@ -103,7 +103,25 @@ from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
 
+
+
 if __name__ == "__main__":
+
+    def set_reward(best_reward, absolute_reward):
+        if best_reward is False:
+            reward = 0
+            best_reward = absolute_reward
+        
+        if absolute_reward > 0.93:
+            reward = absolute_reward
+        else:
+            reward = absolute_reward - best_reward
+        
+        if absolute_reward > best_reward:
+            best_reward = absolute_reward
+
+        return best_reward, reward
+
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Lift")
@@ -180,6 +198,8 @@ if __name__ == "__main__":
     while True:
         # Reset the environment
         obs = env.reset()
+        best_reward = False
+
         # env.robots[0].reset(deterministic=True)
         # env.robots[1].reset(deterministic=True)
         # env.robots[0].set_robot_joint_positions(np.array([0.4, 0.6, 0.5, 0.4, 0.6, 0.5, 0.1]))
@@ -241,5 +261,10 @@ if __name__ == "__main__":
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
+            best_reward, reward = set_reward(best_reward, reward)
             print(reward)
+            print(best_reward)
+            print()
             env.render()
+
+
