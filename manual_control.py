@@ -12,8 +12,10 @@ from robosuite.devices import Keyboard
 
 if __name__ == "__main__":
 
+
+    controller_fpath = "osc_pose.json"
     # Get controller config
-    controller_config = load_controller_config(default_controller="OSC_POSE")
+    controller_config = load_controller_config(custom_fpath=controller_fpath)
 
     # Create argument configuration
     config = {
