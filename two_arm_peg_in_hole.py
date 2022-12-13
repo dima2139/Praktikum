@@ -162,7 +162,7 @@ class TwoArmPegInHole(TwoArmEnv):
         ignore_done=False,
         hard_reset=True,
         camera_names="agentview",
-        camera_heights=256,
+        camera_heights=100,
         camera_widths=256,
         camera_depths=False,
         camera_segmentations=None,  # {None, instance, class, element}

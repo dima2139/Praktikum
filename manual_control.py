@@ -35,7 +35,7 @@ if __name__ == "__main__":
         use_camera_obs=False,
         reward_shaping=True,
         control_freq=20,
-        hard_reset=False,
+        hard_reset=False
     )
 
     # Wrap this environment in a visualization wrapper
@@ -54,6 +54,12 @@ if __name__ == "__main__":
         # Reset the environment
         obs = env.reset()
 
+
+        env.robots[0].reset(deterministic=True)
+        env.robots[1].reset(deterministic=True)
+        #env.robots[0].set_robot_joint_positions(np.array([0, 0.5, 0.4, 0.3, -0.01, 0.1, 0.5]))
+        env.robots[0].set_robot_joint_positions(np.array([0, -0.5, 0, -1, 0, 1, 0]))
+        env.robots[1].set_robot_joint_positions(np.array([0, -0.5, 0, -1, 0, 0.5, 0]))
         # Setup rendering
         cam_id = 0
         env.viewer.set_camera(camera_id=cam_id)
@@ -101,6 +107,8 @@ if __name__ == "__main__":
                 # We're in an environment with no gripper action space, so trim the action space to be the action dim
                 action = action[: env.action_dim]
 
+            if action.sum():
+                print(action)
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
             env.render()
