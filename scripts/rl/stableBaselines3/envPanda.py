@@ -46,11 +46,12 @@ class envPanda(gym.Env):
             has_offscreen_renderer = False,
             render_camera          = "agentview",
             ignore_done            = True,
+            horizon                = 250,
             use_camera_obs         = False,
             reward_shaping         = True,
             control_freq           = 20,
             hard_reset             = False,
-            initialization_noise   = {'type': 'gaussian', 'magnitude': 0.5}
+            # initialization_noise   = {'type': 'gaussian', 'magnitude': 0.5}
         )
 
 
@@ -61,7 +62,7 @@ class envPanda(gym.Env):
             observation['object-state']
         ), dtype=DTYPE)
         observation = np.divide(observation, Omax, dtype=DTYPE)
-        assert np.max(np.abs(observation)) <= 1.0, f'{observation[np.argmax(np.abs(observation))]} at index {np.argmax(np.abs(observation))}'
+        # assert np.max(np.abs(observation)) <= 1.0, f'{observation[np.argmax(np.abs(observation))]} at index {np.argmax(np.abs(observation))}'
         return observation
 
     
@@ -81,24 +82,33 @@ class envPanda(gym.Env):
         if self.success:
             action_combined = np.zeros(12)
 
-        observation, reward, done, info = self.env.step(action_combined)
+        observation, absolute_reward, done, info = self.env.step(action_combined)
         observation = self.set_observation(observation)
-        reward = self.set_reward(reward)
-        
-
-        reward = self.set_reward(reward)
-        done   = self.set_done(observation, reward, done, info)
-        info   = self.set_info(info)
-        if self.evalEnv or self.num_elapsed_episodes%1==0:
-        # if self.evalEnv:
-            self.render()
+        reward      = self.set_reward(absolute_reward)
+        done        = self.set_done(observation, reward, done, info)
+        info        = self.set_info(info)
+        # if self.evalEnv or self.num_elapsed_episodes%1==0:
+        self.render()
 
         return observation, reward, done, info
     
 
-    def set_reward(self, reward):
-        if reward > 0.93:
+    def set_reward(self, absolute_reward):
+        if self.best_reward is False:
+            reward = 0
+            self.best_reward = absolute_reward
+        else:
+            reward = absolute_reward - self.best_reward
+        
+        if absolute_reward > self.best_reward:
+            self.best_reward = absolute_reward
+
+        if absolute_reward > 0.93:
             self.success = True
+    
+        # print(reward)
+        if self.success:
+            reward = 1
 
         return reward
 
@@ -125,20 +135,18 @@ class envPanda(gym.Env):
             self.i += 1
             self.episode_reward += reward
         
-        return done#np.array([done]) 
+        return done
 
 
     def set_info(self, info):
-        return info#[info]
+        return info
 
     
     def reset(self):
-        # if self.evalEnv:
-        #     pl(5)
-        
-        observation = self.env.reset()
-        observation = self.set_observation(observation)
+        observation         = self.env.reset()
+        observation         = self.set_observation(observation)
         self.episode_reward = 0
+        self.best_reward    = False
         self.i              = 1
         self.success        = False
 

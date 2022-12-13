@@ -180,6 +180,9 @@ if __name__ == "__main__":
     while True:
         # Reset the environment
         obs = env.reset()
+        # env.robots[0].reset(deterministic=True)
+        # env.robots[1].reset(deterministic=True)
+        # env.robots[0].set_robot_joint_positions(np.array([0.4, 0.6, 0.5, 0.4, 0.6, 0.5, 0.1]))
 
         # Setup rendering
         cam_id = 0
@@ -238,4 +241,5 @@ if __name__ == "__main__":
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
+            print(reward)
             env.render()
