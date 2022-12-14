@@ -20,8 +20,8 @@ class envPanda(gym.Env):
 
         # Set of 7 actions per robot: 6 actions for 6 joints, 1 action to do nothing
         self.action_space = spaces.MultiDiscrete(
-            nvec = [7,7]
-            # nvec = [7]
+            nvec = [13,13]
+            # nvec = 13
         ) 
 
         self.observation_space = spaces.Box(
@@ -67,27 +67,28 @@ class envPanda(gym.Env):
 
     
     def step(self, action):
-        action_peg = np.zeros((7,))
+        action_peg = np.zeros((13,))
         action_peg[action[0]] = 1
-        action_peg = action_peg[:6] * Amax
+        action_peg = action_peg[:12] * A
+        action_peg_map = np.zeros(6)
+        for i in range(0, 12):
+            action_peg_map[int(i/2)] += action_peg[i]
 
-        action_hole = np.zeros((7,))
-        # action_hole[action[0]] = 1
+        action_hole = np.zeros((13,))
         action_hole[action[1]] = 1
-        action_hole = action_hole[:6] * Amax
+        action_hole = action_hole[:12] * A
+        action_hole_map = np.zeros(6)
+        for i in range(0, 12):
+            action_hole_map[int(i/2)] += action_hole[i]
 
-        action_combined = np.concatenate((action_peg, action_hole))
-        # pl(action_combined)
-
-        # if self.success:
-        #     action_combined = np.zeros(12)
+        action_combined = np.concatenate((action_peg_map, action_hole_map))
 
         observation, absolute_reward, done, info = self.env.step(action_combined)
         observation = self.set_observation(observation)
         reward      = self.set_reward(absolute_reward)
         done        = self.set_done(observation, reward, done, info)
         info        = self.set_info(info)
-        if self.evalEnv or self.num_elapsed_episodes%10==0:
+        if self.evalEnv or self.num_elapsed_episodes%1==0:
             self.render()
 
         return observation, reward, done, info
@@ -99,7 +100,7 @@ class envPanda(gym.Env):
             self.best_reward = absolute_reward
         
         if absolute_reward > 0.93:
-            reward = (absolute_reward - self.best_reward) * 10
+            reward = (absolute_reward - self.best_reward) * 5
         else:
             reward = absolute_reward - self.best_reward
         
@@ -146,7 +147,6 @@ class envPanda(gym.Env):
         self.episode_reward = 0
         self.best_reward    = False
         self.i              = 1
-        # self.success        = False
 
         return observation
 
@@ -156,7 +156,7 @@ class envPanda(gym.Env):
         self.env.render()
     
     
-    def close (self):
+    def close(self):
         self.env.close()
 
 
