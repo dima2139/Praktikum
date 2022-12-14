@@ -9,6 +9,7 @@ from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
 from robosuite.devices import Keyboard
+from scripts.rl.stable_baselines3.setJoints import set_joints
 
 if __name__ == "__main__":
 
@@ -58,8 +59,8 @@ if __name__ == "__main__":
         env.robots[0].reset(deterministic=True)
         env.robots[1].reset(deterministic=True)
         #env.robots[0].set_robot_joint_positions(np.array([0, 0.5, 0.4, 0.3, -0.01, 0.1, 0.5]))
-        env.robots[0].set_robot_joint_positions(np.array([0, -0.4, 0, -1, 0, 1.7, -0.6]))
-        env.robots[1].set_robot_joint_positions(np.array([0, -0.4, 0, -1, 0, 1.7, -0.6]))
+        env.robots[0].set_robot_joint_positions(set_joints(free=1, robot="peg"))
+        env.robots[1].set_robot_joint_positions(set_joints(free=1, robot="hole"))
         # Setup rendering
         cam_id = 0
         env.viewer.set_camera(camera_id=cam_id)

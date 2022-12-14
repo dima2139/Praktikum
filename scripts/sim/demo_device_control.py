@@ -181,8 +181,8 @@ if __name__ == "__main__":
         obs = env.reset()
         env.robots[0].reset(deterministic=True)
         env.robots[1].reset(deterministic=True)
-        env.robots[0].set_robot_joint_positions(set_joints(free_joints=1))
-        env.robots[1].set_robot_joint_positions(set_joints(free_joints=1))
+        env.robots[0].set_robot_joint_positions(set_joints(free_joints=1, robot="peg"))
+        env.robots[1].set_robot_joint_positions(set_joints(free_joints=1, robot="hole"))
 
         # Setup rendering
         cam_id = 0
