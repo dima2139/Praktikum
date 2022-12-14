@@ -18,7 +18,7 @@ from scripts.utils import *
 
 
 ## Setup
-RESUME = True
+RESUME = False
 if not RESUME:
     MODEL = f'rl_model_{int(time.time())}'
 else:
@@ -82,7 +82,7 @@ checkpoint_callback = CheckpointCallback(
     save_vecnormalize  = True,
 )
 ppo.learn(
-    total_timesteps     = 10000,
+    total_timesteps     = 500000,
     callback            = checkpoint_callback,
     log_interval        = 1,
     eval_env            = envEval,

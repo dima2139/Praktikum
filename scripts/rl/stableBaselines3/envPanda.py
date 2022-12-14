@@ -20,8 +20,8 @@ class envPanda(gym.Env):
 
         # Set of 7 actions per robot: 6 actions for 6 joints, 1 action to do nothing
         self.action_space = spaces.MultiDiscrete(
-            nvec = [13,13]
-            # nvec = 13
+            # nvec = [13,13]
+            nvec = [6]
         ) 
 
         self.observation_space = spaces.Box(
@@ -67,50 +67,60 @@ class envPanda(gym.Env):
 
     
     def step(self, action):
+        # action_peg = np.zeros((13,))
+        # action_peg[action[0]] = 1
+        # action_peg = action_peg[:12] * A
+        # action_peg_map = np.zeros(6)
+        # for i in range(0, 12):
+        #     action_peg_map[int(i/2)] += action_peg[i]
+
         action_peg = np.zeros((13,))
         action_peg[action[0]] = 1
         action_peg = action_peg[:12] * A
         action_peg_map = np.zeros(6)
         for i in range(0, 12):
             action_peg_map[int(i/2)] += action_peg[i]
+        action_peg_map[[2,4]] = action_peg_map[[4,2]]
 
-        action_hole = np.zeros((13,))
-        action_hole[action[1]] = 1
-        action_hole = action_hole[:12] * A
+        # action_hole = np.zeros((13,))
+        # action_hole[action[1]] = 1
+        # action_hole = action_hole[:12] * A
         action_hole_map = np.zeros(6)
-        for i in range(0, 12):
-            action_hole_map[int(i/2)] += action_hole[i]
+        # for i in range(0, 12):
+        #     action_hole_map[int(i/2)] += action_hole[i]
 
         action_combined = np.concatenate((action_peg_map, action_hole_map))
 
+        self.env.robots[1].set_robot_joint_positions(np.array([0.020, -0.176, -0.038, -2.517, 0.0, 2.374, 0.71]))
         observation, absolute_reward, done, info = self.env.step(action_combined)
         observation = self.set_observation(observation)
         reward      = self.set_reward(absolute_reward)
         done        = self.set_done(observation, reward, done, info)
         info        = self.set_info(info)
-        if self.evalEnv or self.num_elapsed_episodes%1==0:
+        if self.evalEnv or self.num_elapsed_episodes%15==0:
             self.render()
 
         return observation, reward, done, info
     
 
     def set_reward(self, absolute_reward):
-        if self.best_reward is False:
-            reward = 0
-            self.best_reward = absolute_reward
+        # if self.best_reward is False:
+        #     reward = 0
+        #     self.best_reward = absolute_reward
         
-        if absolute_reward > 0.93:
-            reward = (absolute_reward - self.best_reward) * 5
-        else:
-            reward = absolute_reward - self.best_reward
+        # if absolute_reward > 0.93:
+        #     reward = (absolute_reward - self.best_reward) * 5
+        # else:
+        #     reward = absolute_reward - self.best_reward
         
-        if absolute_reward > self.best_reward:
-            self.best_reward = absolute_reward
+        # if absolute_reward > self.best_reward:
+        #     self.best_reward = absolute_reward
     
         # print(reward)
 
-        return reward
+        reward = absolute_reward
 
+        return reward
 
     def set_done(self, observation, reward, done, info):
 
