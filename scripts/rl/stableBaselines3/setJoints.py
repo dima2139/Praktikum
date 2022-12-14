@@ -12,6 +12,7 @@ def set_joints(free_joints=1, robot="peg"):
         ('upper-rot' , 4),
         ('end-rot'   , 6)
     ]
+    
     if robot=="peg":
         initial_positions = np.array([0, -0.4, 0, -1, 0, 1.7, 0])
     elif robot=="hole":
@@ -19,9 +20,9 @@ def set_joints(free_joints=1, robot="peg"):
     else:
         raise("Error: robot should be peg or hole for set_joints function")
 
-    initial_positions = np.array([0, -0.4, 0, -1, 0, 1.7, -0.6])
+    # initial_positions = np.array([0, -0.4, 0, -1, 0, 1.7, -0.6])
 
     for joint_name, joint_idx in joint_map[:free_joints]:
-        initial_positions[joint_idx] = np.random.uniform(-1,1)
+        initial_positions[joint_idx] = np.random.uniform(-0.1,0.1)
 
     return initial_positions
