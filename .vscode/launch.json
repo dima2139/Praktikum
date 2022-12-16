@@ -21,7 +21,7 @@
             "name": "ppoTrain",
             "type": "python",
             "request": "launch",
-            "program": "scripts/rl/stableBaselines3/ppoTrain.py",
+            "program": "scripts/rl/ppo/ppoTrain.py",
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
             "justMyCode": true
