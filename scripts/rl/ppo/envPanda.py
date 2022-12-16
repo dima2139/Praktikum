@@ -67,6 +67,9 @@ class envPanda(gym.Env):
 
     
     def step(self, action):
+        action
+
+
         action_peg = np.zeros((13,))
         action_peg[action[0]] = 1
         action_peg = action_peg[:12] * A
@@ -95,19 +98,21 @@ class envPanda(gym.Env):
     
 
     def set_reward(self, absolute_reward):
-        if self.best_reward is False:
-            reward = 0
-            self.best_reward = absolute_reward
+        # if self.best_reward is False:
+        #     reward = 0
+        #     self.best_reward = absolute_reward
         
-        if absolute_reward > 0.93:
-            reward = (absolute_reward - self.best_reward) * 5
-        else:
-            reward = absolute_reward - self.best_reward
+        # if absolute_reward > 0.93:
+        #     reward = (absolute_reward - self.best_reward) * 5
+        # else:
+        #     reward = absolute_reward - self.best_reward
         
-        if absolute_reward > self.best_reward:
-            self.best_reward = absolute_reward
+        # if absolute_reward > self.best_reward:
+        #     self.best_reward = absolute_reward
     
-        # print(reward)
+        # # print(reward)
+
+        reward = absolute_reward
 
         return reward
 

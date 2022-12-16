@@ -6,6 +6,7 @@
     "configurations": [
 
 
+
         {
             "name": "Python: Current File",
             "type": "python",
@@ -13,7 +14,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
-            "justMyCode": true
+            "justMyCode": false
         },
 
         {
@@ -21,6 +22,16 @@
             "type": "python",
             "request": "launch",
             "program": "scripts/rl/stableBaselines3/ppoTrain.py",
+            "console": "integratedTerminal",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "justMyCode": true
+        },
+
+        {
+            "name": "sacTrain",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/rl/sac/sacTrain.py",
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
             "justMyCode": true
