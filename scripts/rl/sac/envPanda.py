@@ -45,9 +45,9 @@ class envPanda(gym.Env):
 
         self.env = robosuite.make(
             **config,
-            has_renderer           = True,
+            has_renderer           = False,  # True
             has_offscreen_renderer = False,
-            render_camera          = "agentview",
+            # render_camera          = "agentview",
             ignore_done            = True,
             horizon                = 100,
             use_camera_obs         = False,
@@ -78,8 +78,8 @@ class envPanda(gym.Env):
         reward      = self.set_reward(absolute_reward)
         done        = self.set_done(observation, reward, done, info)
         info        = self.set_info(info)
-        if self.evalEnv or self.num_elapsed_episodes%1==0:
-            self.render()
+        # if self.evalEnv or self.num_elapsed_episodes%1==0:
+        #     self.render()
 
         return observation, reward, done, info
     

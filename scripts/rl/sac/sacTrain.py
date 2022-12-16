@@ -70,14 +70,14 @@ checkpoint_callback = CheckpointCallback(
     save_vecnormalize  = True,
 )
 model.learn(
-    total_timesteps     = 5000000,
+    total_timesteps     = 1000000,
     callback            = checkpoint_callback,
-    log_interval        = 4,
+    log_interval        = 10,
     eval_env            = envEval,
-    eval_freq           = 100 * 15,
-    n_eval_episodes     = 3,
+    eval_freq           = 100 * 20,
+    n_eval_episodes     = 4,
     tb_log_name         = 'SAC',
     reset_num_timesteps = True,
-    progress_bar        = False
+    progress_bar        = True
 )
 model.save(f'{savePath}/final')
