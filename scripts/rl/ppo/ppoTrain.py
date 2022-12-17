@@ -45,7 +45,7 @@ if not RESUME:
     ppo = PPO(
         policy              = 'MlpPolicy',
         env                 = envTrain,
-        learning_rate       = 0.0003,
+        learning_rate       = 0.003,
         n_steps             = 2048,
         batch_size          = 64,
         n_epochs            = 10,

@@ -25,7 +25,7 @@ class envPanda(gym.Env):
         self.observation_space = spaces.Box(
             low   = -1,
             high  = +1,
-            shape = (73,),
+            shape = (20,),
             dtype = np.float32
         )
 
@@ -40,27 +40,38 @@ class envPanda(gym.Env):
 
         self.env = robosuite.make(
             **config,
-            # has_renderer           = True,
-            # has_offscreen_renderer = False,
-            # render_camera          = "agentview",
-            ignore_done            = True,
-            horizon                = 250,
+            has_renderer           = True,
+            has_offscreen_renderer = False,
+            render_camera          = "agentview",
+            render_visual_mesh     = True,
+            render_collision_mesh  = True,
+            ignore_done            = False,
+            horizon                = ,
             use_camera_obs         = False,
             reward_shaping         = True,
             control_freq           = 20,
             hard_reset             = False,
-            # initialization_noise   = {'type': 'gaussian', 'magnitude': 0.5}
+            initialization_noise   = {'type': 'gaussian', 'magnitude': 0.25}
         )
 
 
     def set_observation(self, observation):
         observation = np.concatenate((
-            observation['robot0_proprio-state'],
-            observation['robot1_proprio-state'],
-            observation['object-state']
+            # observation['robot0_proprio-state'],
+            # observation['robot1_proprio-state'],
+            # observation['object-state']
+            observation['robot0_eef_pos'] / 2,
+            observation['peg_quat'],
+            observation['hole_pos'] / 2,
+            observation['hole_quat'],
+            observation['peg_to_hole'] / 2,
+            observation['angle'].reshape(1,),
+            observation['t'].reshape(1,) / 2,
+            observation['d'].reshape(1,) / 2,   
         ), dtype=DTYPE)
-        observation = np.divide(observation, Omax, dtype=DTYPE)
-        # assert np.max(np.abs(observation)) <= 1.0, f'{observation[np.argmax(np.abs(observation))]} at index {np.argmax(np.abs(observation))}'
+        # observation = np.divide(observation, Omax, dtype=DTYPE)
+        if np.max(np.abs(observation)) > 1.0:
+            pl(f'\n\n\nNOTE: {observation[np.argmax(np.abs(observation))]} at index {np.argmax(np.abs(observation))}\n\n\n')
         return observation
 
     
@@ -68,12 +79,14 @@ class envPanda(gym.Env):
         '''
         Apply the agent's action on the environment.
         '''
+        
 
         [primitive, robot, axis, amount] = action
         # print(action)
 
         # observation, absolute_reward, done, info = rotate_or_move(self.env, primitive, robot, axis, amount)
-
+        
+        # if primitive != 2:
         sign = axis%2*2-1
         axis = axis//2
         if amount:
@@ -84,11 +97,15 @@ class envPanda(gym.Env):
                 
                 observation, absolute_reward, done, info = self.env.step(action)
                 # print(action)
-                # self.render()
+                if self.evalEnv or self.i%1==0:
+                    self.render()
         else:
                 observation, absolute_reward, done, info = self.env.step(np.zeros(12))
                 # print(action)
                 # self.render()
+        # else:
+
+
 
         observation = self.set_observation(observation)
         reward      = self.set_reward(absolute_reward)

@@ -21,8 +21,8 @@ class envPanda(gym.Env):
 
         # Set of 3 parameterized action primitives per robot: move, rotate, align
         self.action_space = spaces.Box(
-            low   = -10,
-            high  = +10,
+            low   = -20,
+            high  = +20,
             shape = (6,2),
             dtype = np.float32
         )
@@ -30,7 +30,7 @@ class envPanda(gym.Env):
         self.observation_space = spaces.Box(
             low   = -1,
             high  = +1,
-            shape = (73,),
+            shape = (20,),
             dtype = np.float32
         )
 
@@ -49,26 +49,34 @@ class envPanda(gym.Env):
             has_offscreen_renderer = False,
             # render_camera          = "agentview",
             ignore_done            = True,
-            horizon                = 100,
+            horizon                = 250,
             use_camera_obs         = False,
             reward_shaping         = True,
             control_freq           = 20,
             hard_reset             = False,
-            initialization_noise   = {'type': 'gaussian', 'magnitude': 0.5}
+            initialization_noise   = {'type': 'gaussian', 'magnitude': 0.2}
         )
 
 
     def set_observation(self, observation):
         observation = np.concatenate((
-            observation['robot0_proprio-state'],
-            observation['robot1_proprio-state'],
-            observation['object-state']
+            # observation['robot0_proprio-state'],
+            # observation['robot1_proprio-state'],
+            # observation['object-state']
+            observation['robot0_eef_pos'] / 3,
+            observation['peg_quat'],
+            observation['hole_pos'] / 3,
+            observation['hole_quat'],
+            observation['peg_to_hole'] / 3,
+            observation['angle'].reshape(1,),
+            observation['t'].reshape(1,) / 3,
+            observation['d'].reshape(1,) / 3,   
         ), dtype=DTYPE)
-        observation = np.divide(observation, Omax, dtype=DTYPE)
-        # assert np.max(np.abs(observation)) <= 1.0, f'{observation[np.argmax(np.abs(observation))]} at index {np.argmax(np.abs(observation))}'
+        # observation = np.divide(observation, Omax, dtype=DTYPE)
+        if np.max(np.abs(observation)) > 1.0:
+            pl(f'\n\n\nNOTE: {observation[np.argmax(np.abs(observation))]} at index {np.argmax(np.abs(observation))}\n\n\n')
         return observation
 
-    
     def step(self, action):
         arr_Amax = np.array(Amax).reshape(6,1)
         action *= arr_Amax

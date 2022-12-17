@@ -44,7 +44,7 @@
             "program": "scripts/sim/demo_device_control.py",
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
-            "justMyCode": false,
+            "justMyCode": true,
             "args": [
                 "--environment"  , "TwoArmPegInHole",
                 "--robots"       , "Panda", "Panda",

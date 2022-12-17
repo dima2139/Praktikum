@@ -261,16 +261,19 @@ if __name__ == "__main__":
 
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
+            print(obs['hole_quat'])
+            print(np.sum(np.array(obs['hole_quat'])[1:]))
+            # print(obs['peg_quat'])
             best_reward, reward = set_reward(best_reward, reward)
             # print(reward)
             # print(best_reward)
             # print()
-            env.robots[1].set_robot_joint_positions(np.array([0.020, -0.176, -0.038, -2.517, 0.0, 2.374, 0.71]))
-            if action.sum():
-                argmax = np.abs(action).argmax()
-                print(argmax)
-                print(action[argmax])
-                print()
+            # env.robots[1].set_robot_joint_positions(np.array([0.020, -0.176, -0.038, -2.517, 0.0, 2.374, 0.71]))
+            # if action.sum():
+            #     argmax = np.abs(action).argmax()
+            #     print(argmax)
+            #     print(action[argmax])
+            #     print()
             env.render()
 
 

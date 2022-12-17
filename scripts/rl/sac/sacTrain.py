@@ -33,7 +33,7 @@ logging.basicConfig(filename=logFile, format='%(message)s')
 model = SAC(
     policy                 = 'MlpPolicy',
     env                    = envTrain,
-    learning_rate          = 0.0003,
+    learning_rate          = 0.005,
     buffer_size            = 1000000,
     learning_starts        = 100,
     batch_size             = 256,

@@ -1,4 +1,5 @@
-'''0.15
+'''
+0.15
 Defines constants.
 Author: Daniel von Eschwege
 Date:   9 November 2022
