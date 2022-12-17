@@ -102,7 +102,7 @@ import robosuite as suite
 from robosuite import load_controller_config
 from robosuite.wrappers import VisualizationWrapper
 from robosuite.utils.input_utils import input2action
-from scripts.rl.stableBaselines3.setJoints import set_joints
+from setJoints import set_joints
 
 if __name__ == "__main__":
 

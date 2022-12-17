@@ -9,9 +9,9 @@ from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
 from robosuite.devices import Keyboard
-from scripts.rl.stableBaselines3.setJoints import set_joints
+from setJoints import set_joints
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
 
 
     controller_fpath = "osc_pose.json"
