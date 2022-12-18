@@ -11,14 +11,14 @@ import time
 import logging
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env  # !!!!!!!!!!!!!!!!!!
-from scripts.rl.stableBaselines3.envPanda import envPanda
+from scripts.rl.ppo.envPanda import envPanda
 from stable_baselines3.common.callbacks import CheckpointCallback
 
 from scripts.utils import *
 
 
 ## Setup
-RESUME = True
+RESUME = False
 if not RESUME:
     MODEL = f'rl_model_{int(time.time())}'
 else:
@@ -45,7 +45,7 @@ if not RESUME:
     ppo = PPO(
         policy              = 'MlpPolicy',
         env                 = envTrain,
-        learning_rate       = 0.0003,
+        learning_rate       = 0.003,
         n_steps             = 2048,
         batch_size          = 64,
         n_epochs            = 10,
@@ -75,18 +75,18 @@ else:
     ppo.set_env(envTrain)
 
 checkpoint_callback = CheckpointCallback(
-    save_freq          = 5000,
+    save_freq          = 200,
     save_path          = savePath,
     name_prefix        = 'ppo',
     save_replay_buffer = True,
     save_vecnormalize  = True,
 )
 ppo.learn(
-    total_timesteps     = 10000,
+    total_timesteps     = 100000,
     callback            = checkpoint_callback,
     log_interval        = 1,
     eval_env            = envEval,
-    eval_freq           = 250 * 15,
+    eval_freq           = 10 * 20,
     n_eval_episodes     = 3,
     tb_log_name         = 'PPO',
     eval_log_path       = 'logs',
@@ -94,4 +94,4 @@ ppo.learn(
     progress_bar        = True,
 )
 
-ppo.save(f'{savePath}/ppo_')
+ppo.save(f'{savePath}/ppo_final')
