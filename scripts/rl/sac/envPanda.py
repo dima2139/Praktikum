@@ -25,7 +25,7 @@ class envPanda(gym.Env):
         self.action_space = spaces.Box(
             low   = -ACTION_LIM,
             high  = +ACTION_LIM,
-            shape = (1,),
+            shape = (3,),
             dtype = np.float32
         )
 
@@ -73,15 +73,25 @@ class envPanda(gym.Env):
 
             return step_observation, step_reward, step_done, step_info
         
+        step_done = False
         primitive_reward = 0
-        action = action.astype(int)[0]
-        if action:
-            sign = np.sign(action)
-            for i in range(action, 0, sign*-1):
-                action_flat = np.zeros(12)
-                action_flat[1] = sign * 3.75
-                step_observation, step_reward, step_done, step_info = step_env(action_flat)
-                primitive_reward += step_reward
+        action = action.astype(int)
+        if action.sum():
+            for act, a in zip(action, range(len(action))):
+                if act: 
+                    sign = np.sign(act)
+                    for i in range(act, 0, sign*-1):
+                        action_flat = np.zeros(12)
+                        if a==0:
+                            action_flat[1] = sign * 3.75
+                        if a==1:
+                            action_flat[4] = sign * 0.15
+                        if a==2:
+                            pass
+                        step_observation, step_reward, step_done, step_info = step_env(action_flat)
+                        primitive_reward += step_reward
+                        if step_done:
+                            break
                 if step_done:
                     break
         else:
@@ -194,18 +204,34 @@ class envPanda(gym.Env):
     # ================================== END _primitive_ ================================== #
     
     def reset(self):
-        observation           = self.env.reset()
-        observation           = self.set_primitive_observation(observation, 0)
-        self.previous_reward  = self.env.reward()
-        self.best_reward      = self.env.reward()
-        self.episode_reward   = 0
-        self.render()
+        reward = 1
+        while reward > 0.93:
+            observation                     = self.env.reset()
+            reward                          = self.env.reward()
+            randomizer      = np.zeros(12)
+            randomizer[1]   = (np.random.randn()-0.25) * 5
+            randomizer[4]   = (np.random.randn()-0.00) * 5 
+            randomizer[7]   = (np.random.randn()+0.25) * 10
+            randomizer = np.around(randomizer)
+            while randomizer.sum():
+                randomizer_unitary  = np.sign(randomizer)
+                randomizer         -= randomizer_unitary
+                randomizer_unitary *= Amax + Amax
+                observation, reward, done, info = self.env.step(randomizer_unitary)
+                self.render()
+            
+            observation                     = self.set_primitive_observation(observation, reward)
+            self.previous_reward            = self.env.reward()
+            self.best_reward                = self.env.reward()
+            self.episode_reward             = 0
+
+            # time.sleep(1)
 
         return observation
 
     
     def render(self):
-        if self.evalEnv or self.num_elapsed_episodes % 50 in [1,2,3]:
+        if self.evalEnv or self.num_elapsed_episodes % 50 in [0,1,2]:
             self.env.viewer.set_camera(camera_id=0)
             self.env.render()
     
