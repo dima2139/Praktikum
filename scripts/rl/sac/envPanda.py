@@ -1,8 +1,8 @@
 import gym
 import time
 import robosuite
-import pandas as pd
 from gym import spaces
+from pynput import keyboard
 from stable_baselines3.common.env_checker import check_env
 
 from scripts.const import *
@@ -14,11 +14,18 @@ class envPanda(gym.Env):
     def __init__(self, evalEnv=False):
         super(envPanda, self).__init__()
 
-        self.renderer             = True
         self.episode_rewards      = []
         self.num_elapsed_episodes = 1
         self.evalEnv              = evalEnv
         self.envType              = 'Evaluation' if evalEnv else 'Training'
+
+        self.render_episodes = 0
+        self.listener        = keyboard.Listener(
+            on_press   = self.keypress,
+            on_release = self.keyrelease
+        )
+        self.listener.start()
+
 
         self.action_space_map = {
             2: {'idx':0 , 'name':'peg-Z_m', 'delta':0},
@@ -65,8 +72,8 @@ class envPanda(gym.Env):
 
         self.env = robosuite.make(
             **config,
-            has_renderer           = self.renderer,
-            has_offscreen_renderer = self.renderer,
+            has_renderer           = True,
+            has_offscreen_renderer = True,
             render_camera          = None,
             ignore_done            = False,
             horizon                = ENV_HORIZON,
@@ -204,7 +211,8 @@ class envPanda(gym.Env):
     def set_primitive_done(self, primitive_done):
 
         if primitive_done:
-            pl(f'{self.envType} episode {self.num_elapsed_episodes}  --  episode reward: {self.episode_reward}')
+            render_episode = '(rendered) ' if self.render_episodes else ''
+            pl(f'{render_episode}{self.envType} episode {self.num_elapsed_episodes}  --  episode reward: {self.episode_reward}')
             self.num_elapsed_episodes += 1
             self.episode_rewards.append(self.episode_reward)            
         
@@ -218,6 +226,7 @@ class envPanda(gym.Env):
     # ================================== END _primitive_ ================================== #
     
     def reset(self):
+        self.render_episodes -= np.sign(self.render_episodes)
         t = 0
         while t < 0.2:
             observation = self.env.reset()
@@ -242,13 +251,24 @@ class envPanda(gym.Env):
         self.best_reward                = self.env.reward()
         self.episode_reward             = 0
 
+        self.render()
+
         return observation
 
-    
+
+    def keypress(self, key):
+        self.render_episodes = 3
+        # print(f'Pressed "{key.char}": rendering for 3 episodes')
+
+    def keyrelease(self, key):
+        pass
+
     def render(self):
-        if self.renderer and self.evalEnv or self.num_elapsed_episodes % 50 in [0,1,2]:
-            self.env.viewer.set_camera(camera_id=0)
+        # if self.render_episode and (self.evalEnv or self.num_elapsed_episodes % 50 in [0,1,2]):
+        if self.render_episodes:
+            # self.env.viewer.set_camera(camera_id=0)
             self.env.render()
+            
     
     
     def close(self):
