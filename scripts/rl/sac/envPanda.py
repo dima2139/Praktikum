@@ -20,6 +20,7 @@ class envPanda(gym.Env):
         self.envType              = 'Evaluation' if evalEnv else 'Training'
 
         self.render_episodes = 0
+        self.keypresses      = ''
         self.listener        = keyboard.Listener(
             on_press   = self.keypress,
             on_release = self.keyrelease
@@ -28,21 +29,21 @@ class envPanda(gym.Env):
 
 
         self.action_space_map = {
-            2: {'idx':0 , 'name':'peg-Z_m', 'delta':0},
-            6: {'idx':1 , 'name':'peg-X_m', 'delta':-0.2},
-            4: {'idx':2 , 'name':'peg-Y_m', 'delta':0},
-            #: {'idx':3 , 'name':'peg-Z_r', 'delta':0},
-            0: {'idx':4 , 'name':'peg-X_r', 'delta':0},
-            #: {'idx':5 , 'name':'peg-Y_r', 'delta':0},
+            6:  {'idx':0 , 'name':'peg-Z_m', 'delta':0},
+            10: {'idx':1 , 'name':'peg-X_m', 'delta':-0.25},
+            8:  {'idx':2 , 'name':'peg-Y_m', 'delta':0},
+            2:  {'idx':3 , 'name':'peg-Z_r', 'delta':0},
+            0:  {'idx':4 , 'name':'peg-X_r', 'delta':0},
+            4:  {'idx':5 , 'name':'peg-Y_r', 'delta':0},
             
-            3: {'idx':6 , 'name':'hole-Z_m', 'delta':0},
-            7: {'idx':7 , 'name':'hole-X_m', 'delta':0.2},
-            5: {'idx':8 , 'name':'hole-Y_m', 'delta':0},
-            #: {'idx':9 , 'name':'hole-Z_r', 'delta':0},
-            1: {'idx':10, 'name':'hole-X_r', 'delta':0},
-            #: {'idx':11, 'name':'hole-Y_r', 'delta':0},
+            7:  {'idx':6 , 'name':'hole-Z_m', 'delta':0},
+            11: {'idx':7 , 'name':'hole-X_m', 'delta':0.25},
+            9:  {'idx':8 , 'name':'hole-Y_m', 'delta':0},
+            3:  {'idx':9 , 'name':'hole-Z_r', 'delta':0},
+            1:  {'idx':10, 'name':'hole-X_r', 'delta':0},
+            5:  {'idx':11, 'name':'hole-Y_r', 'delta':0},
 
-            8: {'idx':12, 'name':'sleep',    'delta':0},
+            12: {'idx':12, 'name':'sleep',    'delta':0},
         }
 
 
@@ -257,8 +258,16 @@ class envPanda(gym.Env):
 
 
     def keypress(self, key):
-        self.render_episodes = 3
-        # print(f'Pressed "{key.char}": rendering for 3 episodes')
+        try:
+            if self.keypresses == 'rmujoco' and key.char.isnumeric():
+                self.render_episodes = int(key.char)
+                self.keypresses = ''
+            elif key.char=='r':
+                self.keypresses = 'r'
+            elif self.keypresses:
+                self.keypresses += key.char
+        except:
+            pass
 
     def keyrelease(self, key):
         pass

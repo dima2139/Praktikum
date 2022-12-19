@@ -34,7 +34,7 @@ OSmax = [+3.000 , +3.000 , +3.000 , +1.000 , +1.000 , +1.000 , +1.000 , +3.000 ,
 Omin = RPSmin + RPSmin + OSmin
 Omax = RPSmax + RPSmax + OSmax
 
-ACTION_DIM    = 9
+ACTION_DIM    = 13
 ACTION_LIM    = 30
-ENV_HORIZON   = 100
+ENV_HORIZON   = 200
 AGENT_HORIZON = int(ENV_HORIZON / (ACTION_LIM / 2))  # This is necessarily an approximation
