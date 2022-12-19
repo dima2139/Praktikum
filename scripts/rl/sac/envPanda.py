@@ -235,17 +235,18 @@ class envPanda(gym.Env):
 
             randomizer  = np.zeros(13)
             for k, v in self.action_space_map.items():
-                randomizer[v['idx']] = (np.random.rand() - 0.5 + v['delta']) * 20
+                randomizer[v['idx']] = (np.random.rand() - 0.5 + v['delta']) * ACTION_LIM
             
             randomizer = np.around(randomizer)
             while randomizer.sum():
                 randomizer_unitary  = np.sign(randomizer)
                 randomizer         -= randomizer_unitary
-                randomizer_unitary *= Amax13
+                randomizer_unitary *= Amax13Init
                 observation, reward, done, info = self.env.step(randomizer_unitary[:-1])
-                self.render()
+                # self.render()
             
             t = observation['t']
+
 
         observation                     = self.set_primitive_observation(observation, reward)
         self.previous_reward            = self.env.reward()
@@ -253,6 +254,7 @@ class envPanda(gym.Env):
         self.episode_reward             = 0
 
         self.render()
+        # time.sleep(2)
 
         return observation
 
