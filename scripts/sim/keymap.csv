@@ -21,3 +21,17 @@
 10  ,  g  ,  rot_x  ,  -1  ,  hole
 10  ,  t  ,  rot_x  ,  +1  ,  hole
 11  ,  c  ,  rot_y  ,  -1  ,  hole
+11  ,  c  ,  rot_y  ,  +1  ,  hole
+
+0   ,  w  ,  z      , peg
+1   ,  a  ,  x      , peg
+2   ,  f  ,  y      , peg
+3   ,  z  ,  rot_z  , peg
+4   ,  g  ,  rot_x  , peg
+5   ,  c  ,  rot_y  , peg
+6   ,  w  ,  z      , hole
+7   ,  a  ,  x      , hole
+8   ,  r  ,  y      , hole
+9   ,  z  ,  rot_z  , hole
+10  ,  g  ,  rot_x  , hole
+11  ,  c  ,  rot_y  , hole

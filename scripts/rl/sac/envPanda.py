@@ -10,22 +10,40 @@ from scripts.utils import *
 from scripts.rl.sac.primitives import *
 
 class envPanda(gym.Env):
-    metadata = {"render.modes": ["human"]}
 
     def __init__(self, evalEnv=False):
         super(envPanda, self).__init__()
 
+        self.renderer             = True
         self.episode_rewards      = []
         self.num_elapsed_episodes = 1
         self.evalEnv              = evalEnv
         self.envType              = 'Evaluation' if evalEnv else 'Training'
+
+        self.action_space_map = {
+            2: {'idx':0 , 'name':'peg-Z_m', 'delta':0},
+            6: {'idx':1 , 'name':'peg-X_m', 'delta':-0.2},
+            4: {'idx':2 , 'name':'peg-Y_m', 'delta':0},
+            #: {'idx':3 , 'name':'peg-Z_r', 'delta':0},
+            0: {'idx':4 , 'name':'peg-X_r', 'delta':0},
+            #: {'idx':5 , 'name':'peg-Y_r', 'delta':0},
+            
+            3: {'idx':6 , 'name':'hole-Z_m', 'delta':0},
+            7: {'idx':7 , 'name':'hole-X_m', 'delta':0.2},
+            5: {'idx':8 , 'name':'hole-Y_m', 'delta':0},
+            #: {'idx':9 , 'name':'hole-Z_r', 'delta':0},
+            1: {'idx':10, 'name':'hole-X_r', 'delta':0},
+            #: {'idx':11, 'name':'hole-Y_r', 'delta':0},
+
+            8: {'idx':12, 'name':'sleep',    'delta':0},
+        }
 
 
         # Set of 3 parameterized action primitives per robot: move, rotate, align
         self.action_space = spaces.Box(
             low   = -ACTION_LIM,
             high  = +ACTION_LIM,
-            shape = (3,),
+            shape = (ACTION_DIM,),
             dtype = np.float32
         )
 
@@ -47,9 +65,9 @@ class envPanda(gym.Env):
 
         self.env = robosuite.make(
             **config,
-            has_renderer           = True,
-            has_offscreen_renderer = True,
-            render_camera          = "agentview",
+            has_renderer           = self.renderer,
+            has_offscreen_renderer = self.renderer,
+            render_camera          = None,
             ignore_done            = False,
             horizon                = ENV_HORIZON,
             use_camera_obs         = False,
@@ -77,18 +95,14 @@ class envPanda(gym.Env):
         primitive_reward = 0
         action = action.astype(int)
         if action.sum():
-            for act, a in zip(action, range(len(action))):
-                if act: 
-                    sign = np.sign(act)
-                    for i in range(act, 0, sign*-1):
-                        action_flat = np.zeros(12)
-                        if a==0:
-                            action_flat[1] = sign * 3.75
-                        if a==1:
-                            action_flat[4] = sign * 0.15
-                        if a==2:
-                            pass
-                        step_observation, step_reward, step_done, step_info = step_env(action_flat)
+            for a in range(ACTION_DIM):
+                if action[a]:
+                    sign = np.sign(action[a])
+                    for i in range(action[a], 0, sign*-1):
+                        action_flat = np.zeros(13, dtype=float)
+                        action_flat[self.action_space_map[a]['idx']] = sign
+                        action_flat *= Amax13
+                        step_observation, step_reward, step_done, step_info = step_env(action_flat[:-1])
                         primitive_reward += step_reward
                         if step_done:
                             break
@@ -99,8 +113,8 @@ class envPanda(gym.Env):
             step_observation, step_reward, step_done, step_info = step_env(action_flat)
 
         primitive_observation = step_observation
-        primitive_done = step_done
-        primitive_info = step_info
+        primitive_done        = step_done
+        primitive_info        = step_info
 
         primitive_observation = self.set_primitive_observation(primitive_observation, primitive_reward)
         primitive_reward      = self.set_primitive_reward(primitive_reward)
@@ -204,34 +218,35 @@ class envPanda(gym.Env):
     # ================================== END _primitive_ ================================== #
     
     def reset(self):
-        reward = 1
-        while reward > 0.93:
-            observation                     = self.env.reset()
-            reward                          = self.env.reward()
-            randomizer      = np.zeros(12)
-            randomizer[1]   = (np.random.randn()-0.25) * 5
-            randomizer[4]   = (np.random.randn()-0.00) * 5 
-            randomizer[7]   = (np.random.randn()+0.25) * 10
+        t = 0
+        while t < 0.2:
+            observation = self.env.reset()
+            reward      = self.env.reward()
+
+            randomizer  = np.zeros(13)
+            for k, v in self.action_space_map.items():
+                randomizer[v['idx']] = (np.random.rand() - 0.5 + v['delta']) * 20
+            
             randomizer = np.around(randomizer)
             while randomizer.sum():
                 randomizer_unitary  = np.sign(randomizer)
                 randomizer         -= randomizer_unitary
-                randomizer_unitary *= Amax + Amax
-                observation, reward, done, info = self.env.step(randomizer_unitary)
+                randomizer_unitary *= Amax13
+                observation, reward, done, info = self.env.step(randomizer_unitary[:-1])
                 self.render()
             
-            observation                     = self.set_primitive_observation(observation, reward)
-            self.previous_reward            = self.env.reward()
-            self.best_reward                = self.env.reward()
-            self.episode_reward             = 0
+            t = observation['t']
 
-            # time.sleep(1)
+        observation                     = self.set_primitive_observation(observation, reward)
+        self.previous_reward            = self.env.reward()
+        self.best_reward                = self.env.reward()
+        self.episode_reward             = 0
 
         return observation
 
     
     def render(self):
-        if self.evalEnv or self.num_elapsed_episodes % 50 in [0,1,2]:
+        if self.renderer and self.evalEnv or self.num_elapsed_episodes % 50 in [0,1,2]:
             self.env.viewer.set_camera(camera_id=0)
             self.env.render()
     

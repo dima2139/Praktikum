@@ -270,6 +270,9 @@ if __name__ == "__main__":
             # print()
             # print(env.robots[0]._joint_positions)
             # print(env.robots[1]._joint_positions)
+            print(obs['d'])
+            print(obs['t'])
+            print()
             env.render()
 
 

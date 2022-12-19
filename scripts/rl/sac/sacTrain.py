@@ -6,6 +6,7 @@ Soft Actor-Critic.
 
 ## Imports
 import time
+import shutil
 from stable_baselines3 import SAC
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import CheckpointCallback
@@ -18,6 +19,7 @@ from scripts.rl.sac.envPanda import envPanda
 MODEL = f'{int(time.time())}'
 savePath  = f'models/sac/{MODEL}'
 mkdirs(savePath)
+shutil.copytree('scripts/', f'{savePath}/scripts/')
 
 
 ## Environment
@@ -35,7 +37,7 @@ logging.basicConfig(filename=logFile, format='%(message)s')
 model = SAC(
     policy                 = 'MlpPolicy',
     env                    = envTrain,
-    learning_rate          = 0.003,
+    learning_rate          = 0.0003,
     buffer_size            = 1000000,
     learning_starts        = 100,
     batch_size             = 256,
@@ -65,7 +67,7 @@ model = SAC(
 ## Training
 pl('Starting training...\n\n\n')
 checkpoint_callback = CheckpointCallback(
-    save_freq          = AGENT_HORIZON * 100,
+    save_freq          = AGENT_HORIZON * 250,
     save_path          = savePath,
     name_prefix        = 'sac',
     save_replay_buffer = True,
@@ -77,7 +79,7 @@ model.learn(
     reset_num_timesteps = True,
     progress_bar        = True,
 
-    log_interval        = 10,
+    log_interval        = 50,
     tb_log_name         = 'SAC',
     
     eval_freq           = AGENT_HORIZON * 50,
