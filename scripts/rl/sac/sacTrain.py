@@ -40,7 +40,8 @@ numVecEnvs    = 4
 gradientSteps = 2
 envTrain      = envPanda()
 envEval       = envPanda(evalEnv=True)
-vecEnvTrain   = make_vec_env(envPanda, n_envs=numVecEnvs, seed=SEED)
+if VEC:
+    envTrain   = make_vec_env(envPanda, n_envs=numVecEnvs, seed=SEED)
 
 
 ## Logging
@@ -61,7 +62,7 @@ if args.resume:
     model = SAC.load(f'{args.resume}/{saved_model}')
     model.load_replay_buffer(f'{args.resume}/{saved_replay_buffer}')
     print(f"The loaded_model has {model.replay_buffer.size()} transitions in its buffer")
-    model.set_env(vecEnvTrain)
+    model.set_env(envTrain)
     # params = model.get_parameters()
     # for entity in params:
     #     if 'optimizer' in entity:
@@ -73,7 +74,7 @@ else:
     pl('Starting training...\n\n\n')
     model = SAC(
         policy                 = 'MlpPolicy',
-        env                    = vecEnvTrain,
+        env                    = envTrain,
         learning_rate          = 0.0003,
         buffer_size            = 1000000,
         learning_starts        = 100,

@@ -35,6 +35,7 @@ OSmax = [+3.000 , +3.000 , +3.000 , +1.000 , +1.000 , +1.000 , +1.000 , +3.000 ,
 Omin = RPSmin + RPSmin + OSmin
 Omax = RPSmax + RPSmax + OSmax
 
+VEC           = True
 ACTION_DIM    = 13
 ACTION_LIM    = 30
 ENV_HORIZON   = 200
