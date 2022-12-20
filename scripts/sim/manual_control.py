@@ -14,7 +14,7 @@ from setJoints import set_joints
 if __name__ == "__main__":  
 
 
-    controller_fpath = "osc_pose.json"
+    controller_fpath = "/home/dima/Desktop/Praktikum/g2-peg-in-hole/scripts/sim/osc_pose.json"
     # Get controller config
     controller_config = load_controller_config(custom_fpath=controller_fpath)
 
@@ -110,6 +110,9 @@ if __name__ == "__main__":
 
             if action.sum():
                 print(action)
+                print(env._observables['peg_quat'].obs)
+                print(env._observables['peg_quat'].obs[0] + env._observables['peg_quat'].obs[1] + env._observables['peg_quat'].obs[2] + env._observables['peg_quat'].obs[3])
+                print(env._observables['hole_quat'].obs)
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
             env.render()
