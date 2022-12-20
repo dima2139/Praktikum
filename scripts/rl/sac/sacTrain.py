@@ -32,12 +32,15 @@ else:
     savePath  = f'models/sac/{MODEL}'
     mkdirs(savePath)
 
-# addDir('scripts', f'{savePath}/scripts')
+addDir('scripts', f'{savePath}/scripts')
 
 
 ## Environment
-envTrain = envPanda()
-envEval  = envPanda(evalEnv=True)
+numVecEnvs    = 4
+gradientSteps = 2
+envTrain      = envPanda()
+envEval       = envPanda(evalEnv=True)
+vecEnvTrain   = make_vec_env(envPanda, n_envs=numVecEnvs, seed=SEED)
 
 
 ## Logging
@@ -58,7 +61,7 @@ if args.resume:
     model = SAC.load(f'{args.resume}/{saved_model}')
     model.load_replay_buffer(f'{args.resume}/{saved_replay_buffer}')
     print(f"The loaded_model has {model.replay_buffer.size()} transitions in its buffer")
-    model.set_env(envTrain)
+    model.set_env(vecEnvTrain)
     # params = model.get_parameters()
     # for entity in params:
     #     if 'optimizer' in entity:
@@ -70,7 +73,7 @@ else:
     pl('Starting training...\n\n\n')
     model = SAC(
         policy                 = 'MlpPolicy',
-        env                    = envTrain,
+        env                    = vecEnvTrain,
         learning_rate          = 0.0003,
         buffer_size            = 1000000,
         learning_starts        = 100,
@@ -78,7 +81,7 @@ else:
         tau                    = 0.005,
         gamma                  = 0.99,
         train_freq             = 1,
-        gradient_steps         = 1,
+        gradient_steps         = gradientSteps,  # 1 or -1 or n for vec_env 
         action_noise           = None,
         replay_buffer_class    = None,
         replay_buffer_kwargs   = None,

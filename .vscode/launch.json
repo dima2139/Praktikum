@@ -35,9 +35,9 @@
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
             "justMyCode": true,
-            "args": [
-                "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832"
-            ]
+            // "args": [
+            //     "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832"
+            // ]
         },
     
         {
