@@ -1,7 +1,7 @@
 from stable_baselines3 import SAC
 from scripts.rl.sac.envPanda import envPanda
 
-model = SAC.load("/home/dve/Desktop/g2-peg-in-hole/models/sac/peg-X_mr-Y_m-Z_m--hole-X_mr-Y_m-Z_m/sac_39000_steps.zip")
+model = SAC.load("/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832/sac_35750_steps.zip")
 envEval  = envPanda(evalEnv=True)
 
 obs = envEval.reset()

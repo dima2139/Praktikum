@@ -14,7 +14,6 @@ class envPanda(gym.Env):
     def __init__(self, evalEnv=False):
         super(envPanda, self).__init__()
 
-        self.episode_rewards      = []
         self.num_elapsed_episodes = 1
         self.evalEnv              = evalEnv
         self.envType              = 'Evaluation' if evalEnv else 'Training'
@@ -215,7 +214,6 @@ class envPanda(gym.Env):
             render_episode = '(rendered) ' if self.render_episodes else ''
             pl(f'{render_episode}{self.envType} episode {self.num_elapsed_episodes}  --  episode reward: {self.episode_reward}')
             self.num_elapsed_episodes += 1
-            self.episode_rewards.append(self.episode_reward)            
         
         return primitive_done
 

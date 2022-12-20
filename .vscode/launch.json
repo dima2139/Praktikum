@@ -34,7 +34,10 @@
             "program": "scripts/rl/sac/sacTrain.py",
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
-            "justMyCode": true
+            "justMyCode": true,
+            "args": [
+                "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832"
+            ]
         },
     
         {
