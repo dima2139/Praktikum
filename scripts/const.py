@@ -12,8 +12,8 @@ LOC       = '/home/dve/Desktop/g2-peg-in-hole'
 scriptDIR = f'{LOC}/scripts'
 modelsDir = f'{LOC}/models'
 
-DTYPE   = np.float32
-SEED_TF = 69
+DTYPE = np.float32
+SEED  = 69
 
 Amin       = [-3.750 , -3.750 , -3.750 , -0.150 , -0.150 , -0.150]
 Amax       = [+3.750 , +3.750 , +3.750 , +0.150 , +0.150 , +0.150]
@@ -35,6 +35,7 @@ OSmax = [+3.000 , +3.000 , +3.000 , +1.000 , +1.000 , +1.000 , +1.000 , +3.000 ,
 Omin = RPSmin + RPSmin + OSmin
 Omax = RPSmax + RPSmax + OSmax
 
+VEC           = True
 ACTION_DIM    = 13
 ACTION_LIM    = 30
 ENV_HORIZON   = 200
