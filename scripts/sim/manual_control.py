@@ -10,13 +10,14 @@ from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
 from robosuite.devices import Keyboard
 from setJoints import set_joints
+from rotate_to_plane import rotate_to_plane
 
 if __name__ == "__main__":  
 
 
-    controller_fpath = "/home/dima/Desktop/Praktikum/g2-peg-in-hole/scripts/sim/osc_pose.json"
+    #controller_fpath = "/home/dima/Desktop/Praktikum/g2-peg-in-hole/scripts/sim/osc_pose.json"
     # Get controller config
-    controller_config = load_controller_config(custom_fpath=controller_fpath)
+    controller_config = load_controller_config(default_controller="OSC_POSE")
 
     # Create argument configuration
     config = {
@@ -56,11 +57,11 @@ if __name__ == "__main__":
         obs = env.reset()
 
 
-        env.robots[0].reset(deterministic=True)
-        env.robots[1].reset(deterministic=True)
+        #env.robots[0].reset(deterministic=True)
+        #env.robots[1].reset(deterministic=True)
         #env.robots[0].set_robot_joint_positions(np.array([0, 0.5, 0.4, 0.3, -0.01, 0.1, 0.5]))
-        env.robots[0].set_robot_joint_positions(set_joints(free_joints=1, robot="peg"))
-        env.robots[1].set_robot_joint_positions(set_joints(free_joints=1, robot="hole"))
+        #env.robots[0].set_robot_joint_positions(set_joints(free_joints=1, robot="peg"))
+        #env.robots[1].set_robot_joint_positions(set_joints(free_joints=1, robot="hole"))
         # Setup rendering
         cam_id = 0
         env.viewer.set_camera(camera_id=cam_id)
@@ -111,8 +112,8 @@ if __name__ == "__main__":
             if action.sum():
                 print(action)
                 print(env._observables['peg_quat'].obs)
-                print(env._observables['peg_quat'].obs[0] + env._observables['peg_quat'].obs[1] + env._observables['peg_quat'].obs[2] + env._observables['peg_quat'].obs[3])
-                print(env._observables['hole_quat'].obs)
             # Step through the simulation and render
+
+            rotate_to_plane(plane=2, env=env, robot="hole")
             obs, reward, done, info = env.step(action)
             env.render()
