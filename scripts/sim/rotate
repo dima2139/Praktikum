@@ -1,0 +1,12 @@
+peg:
+["down along y", -0.5, -0.5, 0.5, 0.5]
+["right along x", 0.5, 0.5, 0.5, -0.5]
+["back along z", 0, 0.7, 0, -0.7]
+hole:
+["in xy", 0.5, -0.5, 0.5, -0.5]
+["in yz", 0, -0.7, 0.7, 0]
+["in xz", -0.7, -0.7, 0, 0]
+[0, "v - up", "c - down"]
+[1, "c - up", "v - down"]
+[2, "t - up", "g - down"]
+[3, "x - up", "z - down"]
