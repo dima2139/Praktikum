@@ -6,8 +6,10 @@ Date:   2 November 2022
 
 import os
 import re
+import time
 import json
 import pickle
+import shutil
 import logging
 from pathlib import Path
 from multiprocessing import Process
@@ -44,6 +46,25 @@ def pl(text):
 
     print(text)
     logging.info(text)
+
+
+def replaceDir(src, dst):
+    '''
+    Remove dst if exists.
+    Replace dst with src.
+    '''
+    if os.path.exists(dst):
+        shutil.rmtree(dst)
+    shutil.copytree(f'{src}/', f'{dst}/')
+
+
+def addDir(src, dst):
+    '''
+    Add src to dst with timestamp postfix.
+    '''
+
+    postfix = f'{int(time.time())}'
+    shutil.copytree(f'{src}/', f'{dst}--{postfix}/')
 
 
 def rm(path):

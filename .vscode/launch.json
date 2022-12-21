@@ -6,6 +6,7 @@
     "configurations": [
 
 
+
         {
             "name": "Python: Current File",
             "type": "python",
@@ -13,17 +14,30 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "justMyCode": false
+        },
+
+        {
+            "name": "ppoTrain",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/rl/ppo/ppoTrain.py",
+            "console": "integratedTerminal",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
             "justMyCode": true
         },
 
         {
-            "name": "proximalPolicyOptimization",
+            "name": "sacTrain",
             "type": "python",
             "request": "launch",
-            "program": "scripts/rl/stableBaselines3/proximalPolicyOptimization.py",
+            "program": "scripts/rl/sac/sacTrain.py",
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
-            "justMyCode": true
+            "justMyCode": true,
+            // "args": [
+            //     "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832"
+            // ]
         },
     
         {

@@ -106,6 +106,22 @@ from setJoints import set_joints
 
 if __name__ == "__main__":
 
+    def set_reward(best_reward, absolute_reward):
+        if best_reward is False:
+            reward = 0
+            best_reward = absolute_reward
+        
+        if absolute_reward > 0.93:
+            reward = absolute_reward
+        else:
+            reward = absolute_reward - best_reward
+        
+        if absolute_reward > best_reward:
+            best_reward = absolute_reward
+
+        return best_reward, reward
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Lift")
     parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
@@ -119,17 +135,17 @@ if __name__ == "__main__":
     parser.add_argument("--rot-sensitivity", type=float, default=1.0, help="How much to scale rotation user inputs")
     args = parser.parse_args()
 
-    # Import controller config for EE IK or OSC (pos/ori)
-    if args.controller == "ik":
-        controller_name = "IK_POSE"
-    elif args.controller == "osc":
-        controller_name = "OSC_POSE"
-    else:
-        print("Error: Unsupported controller specified. Must be either 'ik' or 'osc'!")
-        raise ValueError
-
+    controller_name = "OSC_POSE"
+    
     # Get controller config
     controller_config = load_controller_config(default_controller=controller_name)
+
+    # controller_config['initial_qpos'] = [0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -2.0]
+
+    # controller_config["robot_configs"] = [
+    #     {'gripper_type': None, 'initial_qpos': [0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -2.0]},
+    #     {'gripper_type': None, 'initial_qpos': [0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -2.0]},
+    # ]
 
     # Create argument configuration
     config = {
@@ -155,6 +171,15 @@ if __name__ == "__main__":
         reward_shaping         = True,
         control_freq           = 20,
         hard_reset             = False,
+        has_renderer           = True,
+        has_offscreen_renderer = False,
+        render_camera          = "agentview",
+        ignore_done            = True,
+        use_camera_obs         = False,
+        reward_shaping         = True,
+        control_freq           = 20,
+        hard_reset             = False,
+        initialization_noise   = None,
     )
 
     # Wrap this environment in a visualization wrapper
@@ -164,17 +189,10 @@ if __name__ == "__main__":
     np.set_printoptions(formatter={"float": lambda x: "{0:0.3f}".format(x)})
 
     # initialize device
-    if args.device == "keyboard":
-        from robosuite.devices import Keyboard
+    from robosuite.devices import Keyboard
+    device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
+    env.viewer.add_keypress_callback(device.on_press)
 
-        device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-        env.viewer.add_keypress_callback(device.on_press)
-    elif args.device == "spacemouse":
-        from robosuite.devices import SpaceMouse
-
-        device = SpaceMouse(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
-    else:
-        raise Exception("Invalid device choice: choose either 'keyboard' or 'spacemouse'.")
 
     while True:
         # Reset the environment
@@ -183,6 +201,12 @@ if __name__ == "__main__":
         env.robots[1].reset(deterministic=True)
         env.robots[0].set_robot_joint_positions(set_joints(free_joints=1, robot="peg"))
         env.robots[1].set_robot_joint_positions(set_joints(free_joints=1, robot="hole"))
+        best_reward = False
+
+        # env.robots[1].reset(deterministic=True)
+        # env.robots[1].set_robot_joint_positions([-0.030, -0.470, -0.077, -2.078, -0.0, 1.82, 2.3])
+        # env.robots[0].set_robot_joint_positions([0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -0.676])
+        # env.robots[1].set_robot_joint_positions([0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -0.676])
 
         # Setup rendering
         cam_id = 0
@@ -200,6 +224,7 @@ if __name__ == "__main__":
             active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
 
             # Get the newest action
+            action, grasp = input2action(device=device, robot=active_robot, active_arm=args.arm, env_configuration=args.config)
             action, grasp = input2action(device=device, robot=active_robot, active_arm=args.arm, env_configuration=args.config)
 
             # If action is none, then this a reset so we should break
@@ -240,4 +265,25 @@ if __name__ == "__main__":
             # Step through the simulation and render
             obs, reward, done, info = env.step(action)
             # print(reward)
+            # print(obs['hole_quat'])
+            # print(np.sum(np.array(obs['hole_quat'])[1:]))
+            # print(obs['peg_quat'])
+            best_reward, reward = set_reward(best_reward, reward)
+            # print(reward)
+            # print(best_reward)
+            # print()
+            # env.robots[1].set_robot_joint_positions(np.array([0.020, -0.176, -0.038, -2.517, 0.0, 2.374, 0.71]))
+            # if action.sum():
+            #     argmax = np.abs(action).argmax()
+            #     print(argmax)
+            #     print(action[argmax])
+            #     print()
+            # print()
+            # print(env.robots[0]._joint_positions)
+            # print(env.robots[1]._joint_positions)
+            print(obs['d'])
+            print(obs['t'])
+            print()
             env.render()
+
+
