@@ -1,6 +1,7 @@
-## Imports
+# Imports
 import gym
 import time
+import datetime
 import robosuite
 from gym import spaces
 from pynput import keyboard
@@ -14,20 +15,34 @@ from scripts.rl.sac.primitives import *
 ## Panda Environment Class
 class envPanda(gym.Env):
 
-    def __init__(self, evalEnv=False):
+    def __init__(self, savePath, evalEnv=False):
         super(envPanda, self).__init__()
 
-        self.num_elapsed_episodes = 1
+        self.render_episodes = 0
+        if evalEnv:
+            envNumber = 1
+        else:
+            envNumberPath = f'{savePath}/render_env'
+            if os.path.exists(envNumberPath):
+                with open(envNumberPath, 'r') as f:
+                    envNumber = int(f.read())
+                    envNumber += 1
+            else:
+                envNumber = 1
+            with open(envNumberPath, 'w') as f:
+                f.write(str(envNumber))
+        if envNumber==1:
+            self.keypresses      = ''
+            self.listener        = keyboard.Listener(
+                on_press   = self.keypress,
+                on_release = self.keyrelease
+            )
+            self.listener.start()
+
+        self.timeStart            = time.time()
         self.evalEnv              = evalEnv
         self.envType              = 'Evaluation' if evalEnv else 'Training'
-
-        self.render_episodes = 0
-        self.keypresses      = ''
-        self.listener        = keyboard.Listener(
-            on_press   = self.keypress,
-            on_release = self.keyrelease
-        )
-        self.listener.start()
+        self.num_elapsed_episodes = envNumber
 
         self.action_space_map = {
             6:  {'idx':0 , 'name':'peg-Z_m', 'delta':0},
@@ -230,10 +245,14 @@ class envPanda(gym.Env):
     def set_primitive_done(self, primitive_done):
 
         if primitive_done:
-            render_episode = '(rendered) ' if self.render_episodes else ''
-            pl(f'{render_episode}{self.envType} episode {self.num_elapsed_episodes}  --  episode reward: {self.episode_reward}')
-            self.num_elapsed_episodes += 1
-        
+            rendered  = '(rendered) ' if self.render_episodes else ''
+            elapsed   = f'{self.envType} ep. {self.num_elapsed_episodes}'
+            reward    = f' -- ep. reward: {self.episode_reward}'
+            timenow   = f' -- time {datetime.datetime.now()}' if self.evalEnv else ''
+            timedelta = f' -- timedelta {time.time() - self.timeStart}' #if self.evalEnv else ''
+            pl(f'{rendered}{elapsed}{reward}{timenow}{timedelta}')
+            self.num_elapsed_episodes += 1 if self.evalEnv else NUM_VEC_ENVS 
+
         return primitive_done
 
 
@@ -274,7 +293,7 @@ class envPanda(gym.Env):
                 observation  = self.env.reset()
                 velocityFlag = np.linalg.norm(observation['robot0_joint_vel']) > velocityLim or np.linalg.norm(observation['robot1_joint_vel']) > velocityLim
                 if velocityFlag:
-                    print(f'Joint velocity exceeded, robot0: {observation["robot0_joint_vel"]}, robot1: {observation["robot1_joint_vel"]}')
+                    pl(f'Joint velocity exceeded, robot0: {observation["robot0_joint_vel"]}, robot1: {observation["robot1_joint_vel"]}')
                 self.render()
         
         else:
@@ -284,7 +303,6 @@ class envPanda(gym.Env):
         self.previous_reward            = self.env.reward()
         # self.best_reward                = self.env.reward()
         self.episode_reward             = 0
-        self.render()
 
         return observation
 

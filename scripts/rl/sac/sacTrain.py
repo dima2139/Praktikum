@@ -35,12 +35,15 @@ addDir('scripts', f'{savePath}/scripts')
 
 
 ## Environment
-numVecEnvs    = 4
-gradientSteps = 2
-envTrain      = envPanda()
-envEval       = envPanda(evalEnv=True)
-if VEC:
-    envTrain   = make_vec_env(envPanda, n_envs=numVecEnvs, seed=SEED)
+if NUM_VEC_ENVS > 1:
+    gradientSteps = 2
+    envTrain      = make_vec_env(envPanda, env_kwargs={'savePath':savePath}, n_envs=NUM_VEC_ENVS, seed=SEED)
+else:
+    gradientSteps = 1
+    envTrain      = make_vec_env(envPanda, env_kwargs={'savePath':savePath}, n_envs=1, seed=SEED)
+
+# envEval = envPanda(savePath=savePath, evalEnv=True)
+envEval = make_vec_env(envPanda, env_kwargs={'savePath':savePath, 'evalEnv':True}, n_envs=1, seed=SEED+1)
 
 
 ## Logging
@@ -70,7 +73,7 @@ if args.resume:
     # model.learning_rate = 0.0001
 
 else:
-    pl(f'Starting training at {datetime.datetime.now()}...\n\n\n')
+    pl(f'\n\n\nStarting training at {datetime.datetime.now()}...\n\n\n')
     model = SAC(
         policy                 = 'MlpPolicy',
         env                    = envTrain,
@@ -115,10 +118,10 @@ model.learn(
     reset_num_timesteps = True,
     progress_bar        = True,
 
-    log_interval        = 30,
+    log_interval        = 10,
     tb_log_name         = 'SAC',
     
-    eval_freq           = AGENT_HORIZON * 30,
+    eval_freq           = AGENT_HORIZON * 500,
     eval_env            = envEval,
     n_eval_episodes     = 3,
 )
