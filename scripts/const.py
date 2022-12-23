@@ -12,8 +12,8 @@ LOC       = '/home/dve/Desktop/g2-peg-in-hole'
 scriptDIR = f'{LOC}/scripts'
 modelsDir = f'{LOC}/models'
 
-DTYPE   = np.float32
-SEED_TF = 69
+DTYPE = np.float32
+SEED  = 69
 
 Amin       = [-0.975 , -0.975 , -0.975 , -0.150 , -0.150 , -0.150]
 Amax       = [+0.975 , +0.975 , +0.975 , +0.150 , +0.150 , +0.150]
@@ -35,9 +35,11 @@ OSmax = [+3.000 , +3.000 , +3.000 , +1.000 , +1.000 , +1.000 , +1.000 , +3.000 ,
 Omin = RPSmin + RPSmin + OSmin
 Omax = RPSmax + RPSmax + OSmax
 
-ACTION_LIM    = 30
-ENV_HORIZON   = 100
-AGENT_HORIZON = int(ENV_HORIZON / (ACTION_LIM / 2))  # This is necessarily an approximation
 RESET_MODE    = 'default'  # default, fixed_dimensions, limit_velocity
 STEP_MODE     = 'default'  # default, primitive
+VEC           = True
+ACTION_LIM    = 30
 ACTION_DIM    = 13 if STEP_MODE=='primitive' else 12
+ENV_HORIZON   = 50
+AGENT_HORIZON = int(ENV_HORIZON / (ACTION_LIM / 2))  # This is necessarily an approximation
+print(AGENT_HORIZON)

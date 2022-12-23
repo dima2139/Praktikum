@@ -35,8 +35,12 @@ addDir('scripts', f'{savePath}/scripts')
 
 
 ## Environment
-envTrain = envPanda()
-envEval  = envPanda(evalEnv=True)
+numVecEnvs    = 4
+gradientSteps = 2
+envTrain      = envPanda()
+envEval       = envPanda(evalEnv=True)
+if VEC:
+    envTrain   = make_vec_env(envPanda, n_envs=numVecEnvs, seed=SEED)
 
 
 ## Logging
@@ -77,7 +81,7 @@ else:
         tau                    = 0.005,
         gamma                  = 0.99,
         train_freq             = 1,
-        gradient_steps         = 1,
+        gradient_steps         = gradientSteps,  # 1 or -1 or n for vec_env 
         action_noise           = None,
         replay_buffer_class    = None,
         replay_buffer_kwargs   = None,
