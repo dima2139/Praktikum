@@ -35,9 +35,9 @@
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
             "justMyCode": true,
-            "args": [
-                "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832"
-            ]
+            // "args": [
+            //     "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832"
+            // ]
         },
     
         {
@@ -49,12 +49,14 @@
             "env": {"PYTHONPATH": "${workspaceRoot}"},
             "justMyCode": false,
             "args": [
-                "--environment"  , "TwoArmPegInHole",
-                "--robots"       , "Panda", "Panda",
-                "--config"       , "single-arm-opposed",
-                "--arm"          , "right",
-                "--controller"   , "osc",
-                "--device"       , "keyboard",
+                "--environment"    , "TwoArmPegInHole",
+                "--robots"         , "Panda", "Panda",
+                "--config"         , "single-arm-opposed",
+                "--arm"            , "right",
+                "--controller"     , "osc",
+                "--device"         , "keyboard",
+                "--robot_init_qpos", "0.0", "0.19634954", "0.0", "-2.61799388", "0.0", "2.94159265", "0.78539816",
+                // "--robot_init_qpos", "0.0", "-0.229", "0.0", "-1.456", "0.0", "1.163", "2.371",
                 "--switch-on-grasp"
             ]
         },

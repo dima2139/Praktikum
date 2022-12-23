@@ -1,4 +1,3 @@
-
 '''
 Soft Actor-Critic.
 '''
@@ -6,8 +5,8 @@ Soft Actor-Critic.
 
 ## Imports
 import time
-import shutil
 import argparse
+import datetime
 from stable_baselines3 import SAC
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import CheckpointCallback
@@ -32,7 +31,7 @@ else:
     savePath  = f'models/sac/{MODEL}'
     mkdirs(savePath)
 
-# addDir('scripts', f'{savePath}/scripts')
+addDir('scripts', f'{savePath}/scripts')
 
 
 ## Environment
@@ -67,7 +66,7 @@ if args.resume:
     # model.learning_rate = 0.0001
 
 else:
-    pl('Starting training...\n\n\n')
+    pl(f'Starting training at {datetime.datetime.now()}...\n\n\n')
     model = SAC(
         policy                 = 'MlpPolicy',
         env                    = envTrain,
@@ -93,7 +92,7 @@ else:
         verbose                = 1,
         tensorboard_log        = f'{savePath}/tensorboard',
         seed                   = None,
-        device                 = 'auto',
+        device                 = 'cuda',
         _init_setup_model      = True
     )
 
@@ -107,7 +106,7 @@ checkpoint_callback = CheckpointCallback(
     save_vecnormalize  = True,
 )
 model.learn(
-    total_timesteps     = 50000,
+    total_timesteps     = 250000,
     callback            = checkpoint_callback,
     reset_num_timesteps = True,
     progress_bar        = True,
