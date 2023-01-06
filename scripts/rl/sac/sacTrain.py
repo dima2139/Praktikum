@@ -1,4 +1,3 @@
-
 '''
 Soft Actor-Critic.
 '''
@@ -6,8 +5,8 @@ Soft Actor-Critic.
 
 ## Imports
 import time
-import shutil
 import argparse
+import datetime
 from stable_baselines3 import SAC
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.callbacks import CheckpointCallback
@@ -36,12 +35,15 @@ addDir('scripts', f'{savePath}/scripts')
 
 
 ## Environment
-numVecEnvs    = 4
-gradientSteps = 2
-envTrain      = envPanda()
-envEval       = envPanda(evalEnv=True)
-if VEC:
-    envTrain   = make_vec_env(envPanda, n_envs=numVecEnvs, seed=SEED)
+if NUM_VEC_ENVS > 1:
+    gradientSteps = 2
+    envTrain      = make_vec_env(envPanda, env_kwargs={'savePath':savePath}, n_envs=NUM_VEC_ENVS, seed=SEED)
+else:
+    gradientSteps = 1
+    envTrain      = make_vec_env(envPanda, env_kwargs={'savePath':savePath}, n_envs=1, seed=SEED)
+
+# envEval = envPanda(savePath=savePath, evalEnv=True)
+envEval = make_vec_env(envPanda, env_kwargs={'savePath':savePath, 'evalEnv':True}, n_envs=1, seed=SEED+1)
 
 
 ## Logging
@@ -71,7 +73,7 @@ if args.resume:
     # model.learning_rate = 0.0001
 
 else:
-    pl('Starting training...\n\n\n')
+    pl(f'\n\n\nStarting training at {datetime.datetime.now()}...\n\n\n')
     model = SAC(
         policy                 = 'MlpPolicy',
         env                    = envTrain,
@@ -97,7 +99,7 @@ else:
         verbose                = 1,
         tensorboard_log        = f'{savePath}/tensorboard',
         seed                   = None,
-        device                 = 'auto',
+        device                 = 'cuda',
         _init_setup_model      = True
     )
 
@@ -111,15 +113,15 @@ checkpoint_callback = CheckpointCallback(
     save_vecnormalize  = True,
 )
 model.learn(
-    total_timesteps     = 50000,
+    total_timesteps     = 250000,
     callback            = checkpoint_callback,
     reset_num_timesteps = True,
     progress_bar        = True,
 
-    log_interval        = 30,
+    log_interval        = 10,
     tb_log_name         = 'SAC',
     
-    eval_freq           = AGENT_HORIZON * 30,
+    eval_freq           = AGENT_HORIZON * 500,
     eval_env            = envEval,
     n_eval_episodes     = 3,
 )

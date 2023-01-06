@@ -103,6 +103,7 @@ from robosuite import load_controller_config
 from robosuite.utils.input_utils import input2action
 from robosuite.wrappers import VisualizationWrapper
 
+from scripts.const import *
 
 
 if __name__ == "__main__":
@@ -126,9 +127,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--environment", type=str, default="Lift")
     parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
-    parser.add_argument(
-        "--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary"
-    )
+    parser.add_argument("--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary")
+    parser.add_argument("--robot_init_qpos", nargs="+", type=float, default=[ 0. , 0.19634954,  0. , -2.61799388,  0., 2.94159265, 0.78539816], help="initial q_pos of robot(s)")
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
     parser.add_argument("--toggle-camera-on-grasp", action="store_true", help="Switch camera angle on gripper action")
@@ -142,18 +142,12 @@ if __name__ == "__main__":
     
     # Get controller config
     controller_config = load_controller_config(default_controller=controller_name)
-
-    # controller_config['initial_qpos'] = [0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -2.0]
-
-    # controller_config["robot_configs"] = [
-    #     {'gripper_type': None, 'initial_qpos': [0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -2.0]},
-    #     {'gripper_type': None, 'initial_qpos': [0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -2.0]},
-    # ]
-
+    
     # Create argument configuration
     config = {
-        "env_name": args.environment,
-        "robots": args.robots,
+        "env_name"          : args.environment,
+        "robots"            : args.robots,
+        "initial_qpos"      : np.array(args.robot_init_qpos),
         "controller_configs": controller_config,
     }
 
@@ -174,7 +168,7 @@ if __name__ == "__main__":
         reward_shaping         = True,
         control_freq           = 20,
         hard_reset             = False,
-        initialization_noise   = None,
+        # initialization_noise   = {'type': 'uniform', 'magnitude': 0.5}
     )
 
     # Wrap this environment in a visualization wrapper
@@ -193,12 +187,7 @@ if __name__ == "__main__":
         # Reset the environment
         obs = env.reset()
         best_reward = False
-
-        # env.robots[1].reset(deterministic=True)
-        # env.robots[1].set_robot_joint_positions([-0.030, -0.470, -0.077, -2.078, -0.0, 1.82, 2.3])
-        # env.robots[0].set_robot_joint_positions([0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -0.676])
-        # env.robots[1].set_robot_joint_positions([0.050, -0.259, 0.052, -1.442, -0.016, 1.169, -0.676])
-
+        
         # Setup rendering
         cam_id = 0
         num_cam = len(env.sim.model.camera_names)
@@ -216,7 +205,6 @@ if __name__ == "__main__":
 
             # Get the newest action
             action, grasp = input2action(device=device, robot=active_robot, active_arm=args.arm, env_configuration=args.config)
-
             # If action is none, then this a reset so we should break
             if action is None:
                 break
@@ -253,26 +241,9 @@ if __name__ == "__main__":
                 action = action[: env.action_dim]
 
             # Step through the simulation and render
+            if action.sum():
+                action /= np.max(np.abs(action))
+                action *= Amax12
+                print(action)
             obs, reward, done, info = env.step(action)
-            # print(obs['hole_quat'])
-            # print(np.sum(np.array(obs['hole_quat'])[1:]))
-            # print(obs['peg_quat'])
-            best_reward, reward = set_reward(best_reward, reward)
-            # print(reward)
-            # print(best_reward)
-            # print()
-            # env.robots[1].set_robot_joint_positions(np.array([0.020, -0.176, -0.038, -2.517, 0.0, 2.374, 0.71]))
-            # if action.sum():
-            #     argmax = np.abs(action).argmax()
-            #     print(argmax)
-            #     print(action[argmax])
-            #     print()
-            # print()
-            # print(env.robots[0]._joint_positions)
-            # print(env.robots[1]._joint_positions)
-            print(obs['d'])
-            print(obs['t'])
-            print()
             env.render()
-
-
