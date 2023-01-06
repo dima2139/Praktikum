@@ -11,8 +11,9 @@ from robosuite.wrappers import VisualizationWrapper
 from robosuite.devices import Keyboard
 from setJoints import set_joints
 from rotate_to_plane import rotate_to_plane
-from quat_to_euler import quaternion_to_euler_angle
+from quat_to_euler import quat_to_euler
 from align_to_axis import align_to_axis
+from align import align
 
 if __name__ == "__main__":  
 
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     while True:
         # Reset the environment
         obs = env.reset()
-
+        flag = True
 
         #env.robots[0].reset(deterministic=True)
         #env.robots[1].reset(deterministic=True)
@@ -113,9 +114,11 @@ if __name__ == "__main__":
 
             if action.sum():
                 print(action)
-                print(quaternion_to_euler_angle(env._observables['peg_quat'].obs[0], env._observables['peg_quat'].obs[1], env._observables['peg_quat'].obs[2], env._observables['peg_quat'].obs[3]))
+                print(quat_to_euler(env._observables['hole_quat'].obs[0], env._observables['hole_quat'].obs[1], env._observables['hole_quat'].obs[2], env._observables['hole_quat'].obs[3]))
             # Step through the simulation and render
-
-            align_to_axis(axis=0, direction=-1, env=env, robot="hole")
+            if flag:
+                align(1, direction=1, env=env, robot="peg")
+                flag = False
+            
             obs, reward, done, info = env.step(action)
             env.render()
