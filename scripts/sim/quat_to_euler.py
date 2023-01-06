@@ -1,6 +1,6 @@
 import math
 
-def quaternion_to_euler_angle(w, x, y, z):
+def quat_to_euler(w, x, y, z):
     ysqr = y * y
 
     t0 = +2.0 * (w * x + y * z)
