@@ -15,7 +15,7 @@ from scripts.rl.sac.primitives import *
 ## Panda Environment Class
 class envPanda(gym.Env):
 
-    def __init__(self, savePath, evalEnv=False):
+    def __init__(self, savePath=None, evalEnv=False):
         super(envPanda, self).__init__()
 
         self.render_episodes = 0
@@ -249,7 +249,7 @@ class envPanda(gym.Env):
             elapsed   = f'{self.envType} ep. {self.num_elapsed_episodes}'
             reward    = f' -- ep. reward: {self.episode_reward}'
             timenow   = f' -- time {datetime.datetime.now()}' if self.evalEnv else ''
-            timedelta = f' -- timedelta {time.time() - self.timeStart}' #if self.evalEnv else ''
+            timedelta = f' -- timedelta {time.time() - self.timeStart}' if self.evalEnv else ''
             pl(f'{rendered}{elapsed}{reward}{timenow}{timedelta}')
             self.num_elapsed_episodes += 1 if self.evalEnv else NUM_VEC_ENVS 
 
@@ -325,7 +325,7 @@ class envPanda(gym.Env):
 
 
     def render(self):
-        if self.render_episodes:
+        # if self.render_episodes:
             self.env.render()
             
     
