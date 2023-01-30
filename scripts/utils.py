@@ -58,14 +58,14 @@ def replaceDir(src, dst):
     shutil.copytree(f'{src}/', f'{dst}/')
 
 
-def addDir(src, dst):
+def addDir(src, dst, postfix=None):
     '''
     Add src to dst with timestamp postfix.
     '''
-
-    postfix = f'{int(time.time())}'
-    shutil.copytree(f'{src}/', f'{dst}--{postfix}/')
-
+    if postfix:
+        shutil.copytree(f'{src}/', f'{dst}--{postfix}/')
+    else:
+        shutil.copytree(f'{src}/', f'{dst}/')
 
 def rm(path):
     '''

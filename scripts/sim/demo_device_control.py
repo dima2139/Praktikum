@@ -128,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument("--environment", type=str, default="Lift")
     parser.add_argument("--robots", nargs="+", type=str, default="Panda", help="Which robot(s) to use in the env")
     parser.add_argument("--config", type=str, default="single-arm-opposed", help="Specified environment configuration if necessary")
-    parser.add_argument("--robot_init_qpos", nargs="+", type=float, default=[ 0. , 0.19634954,  0. , -2.61799388,  0., 2.94159265, 0.78539816], help="initial q_pos of robot(s)")
+    # parser.add_argument("--robot_init_qpos", nargs="+", type=float, default=[ 0. , 0.19634954,  0. , -2.61799388,  0., 2.94159265, 0.78539816], help="initial q_pos of robot(s)")
     parser.add_argument("--arm", type=str, default="right", help="Which arm to control (eg bimanual) 'right' or 'left'")
     parser.add_argument("--switch-on-grasp", action="store_true", help="Switch gripper control on gripper action")
     parser.add_argument("--toggle-camera-on-grasp", action="store_true", help="Switch camera angle on gripper action")
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     config = {
         "env_name"          : args.environment,
         "robots"            : args.robots,
-        "initial_qpos"      : np.array(args.robot_init_qpos),
+        # "initial_qpos"      : np.array(args.robot_init_qpos),
         "controller_configs": controller_config,
     }
 
@@ -240,10 +240,11 @@ if __name__ == "__main__":
                 # We're in an environment with no gripper action space, so trim the action space to be the action dim
                 action = action[: env.action_dim]
 
-            # Step through the simulation and render
-            if action.sum():
-                action /= np.max(np.abs(action))
-                action *= Amax12
-                print(action)
+            # # Step through the simulation and render
+            # if action.sum():
+            #     action /= np.max(np.abs(action))
+            #     action *= Amax12
+            #     print(action)
             obs, reward, done, info = env.step(action)
+            # print(f'd: {obs["d"]:.4f}, t: {obs["t"]:.4f}, angle: {obs["angle"]:.4f}')
             env.render()

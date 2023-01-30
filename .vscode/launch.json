@@ -39,6 +39,19 @@
             //     "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832"
             // ]
         },
+
+        {
+            "name": "sacRapTrain",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/rap/sac/sacRapTrain.py",
+            "console": "integratedTerminal",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "justMyCode": true,
+            // "args": [
+            //     "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832"
+            // ]
+        },
     
         {
             "name": "demo_device_control",
@@ -50,12 +63,13 @@
             "justMyCode": false,
             "args": [
                 "--environment"    , "TwoArmPegInHole",
+                // "--environment"    , "TwoArmLift",
                 "--robots"         , "Panda", "Panda",
                 "--config"         , "single-arm-opposed",
                 "--arm"            , "right",
                 "--controller"     , "osc",
                 "--device"         , "keyboard",
-                "--robot_init_qpos", "0.0", "0.19634954", "0.0", "-2.61799388", "0.0", "2.94159265", "0.78539816",
+                // "--robot_init_qpos", "0.0", "0.19634954", "0.0", "-2.61799388", "0.0", "2.94159265", "0.78539816",
                 // "--robot_init_qpos", "0.0", "-0.229", "0.0", "-1.456", "0.0", "1.163", "2.371",
                 "--switch-on-grasp"
             ]
