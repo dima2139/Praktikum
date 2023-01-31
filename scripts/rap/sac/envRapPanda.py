@@ -155,25 +155,25 @@ class envRapPanda(gym.Env):
             step_reward = 1
 
         if self.primitive == "angle":
-            action_reward     = env_observation[self.primitive]
+            reward = env_observation[self.primitive]
         
         elif self.primitive == "d":
-            action_reward     = 1 - np.tanh(env_observation[self.primitive])
+            reward = 1 - np.tanh(env_observation[self.primitive])
 
         elif self.primitive == "reach+t":
-            hole_pos             = self.env.sim.data.body_xpos[self.env.hole_body_id]
-            gripper_site_pos     = self.env.sim.data.body_xpos[self.env.peg_body_id]
-            dist                 = np.linalg.norm(gripper_site_pos - hole_pos)
-            reaching_reward      = 1 - np.tanh(1.0 * dist)
-            action_reward        = (reaching_reward + (1 - np.tanh(np.abs(env_observation[self.primitive])))) / 2
+            hole_pos         = self.env.sim.data.body_xpos[self.env.hole_body_id]
+            gripper_site_pos = self.env.sim.data.body_xpos[self.env.peg_body_id]
+            dist             = np.linalg.norm(gripper_site_pos - hole_pos)
+            reaching_reward  = 1 - np.tanh(1.0 * dist)
+            reward           = (reaching_reward + (1 - np.tanh(np.abs(env_observation[self.primitive])))) / 2
         
         if reset:
-            self.previous_reward = action_reward
+            self.previous_reward = reward
             return None
 
         else:
-            step_reward = action_reward - self.previous_reward
-            self.previous_reward = action_reward
+            step_reward = reward - self.previous_reward
+            self.previous_reward = reward
             return step_reward
 
 

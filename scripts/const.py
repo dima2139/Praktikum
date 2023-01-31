@@ -42,5 +42,5 @@ ACTION_LIM    = 30
 ACTION_DIM    = 13 if STEP_MODE== 'action' else 12
 ENV_HORIZON   = 50
 AGENT_HORIZON = int(ENV_HORIZON / (ACTION_LIM / 2))  # This is necessarily an approximation
-NUM_VEC_ENVS  = 1
-PRIMITIVE     = 'angle'
+NUM_VEC_ENVS  = 4
+PRIMITIVE     = 'd'
