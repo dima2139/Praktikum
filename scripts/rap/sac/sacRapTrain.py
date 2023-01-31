@@ -106,7 +106,7 @@ else:
 
 ## Training
 checkpoint_callback = CheckpointCallback(
-    save_freq          = AGENT_HORIZON * 100,
+    save_freq          = AGENT_HORIZON * 250,
     save_path          = savePath,
     name_prefix        = 'sac_resume',
     save_replay_buffer = True,
@@ -121,7 +121,7 @@ model.learn(
     log_interval        = 100,
     tb_log_name         = 'SAC',
     
-    eval_freq           = AGENT_HORIZON * 50,
+    eval_freq           = AGENT_HORIZON * 100,
     eval_env            = envEval,
     n_eval_episodes     = 3,
 )

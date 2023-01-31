@@ -106,22 +106,30 @@ from robosuite.wrappers import VisualizationWrapper
 from scripts.const import *
 
 
-if __name__ == "__main__":
 
-    def set_reward(best_reward, absolute_reward):
-        if best_reward is False:
-            reward = 0
-            best_reward = absolute_reward
-        
-        if absolute_reward > 0.93:
-            reward = absolute_reward
+def set_step_reward(env_observation, previous_reward=None, reset=False, action_flag=False):
+
+        dist_peg  = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"]) / len(QUAT_ANGLES_PEG)
+        dist_hole = np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"]) / len(QUAT_ANGLES_HOLE)
+        reward    = 1 - (dist_peg + dist_hole)
+
+        if reset:
+            previous_reward = reward
+            
+            return previous_reward
+
         else:
-            reward = absolute_reward - best_reward
-        
-        if absolute_reward > best_reward:
-            best_reward = absolute_reward
+            step_reward = reward - previous_reward
+            previous_reward = reward
 
-        return best_reward, reward
+            # if action_flag:
+            #     print(f'step_reward: {step_reward}')
+
+            return step_reward, previous_reward
+
+
+
+if __name__ == "__main__":
 
 
     parser = argparse.ArgumentParser()
@@ -186,6 +194,7 @@ if __name__ == "__main__":
     while True:
         # Reset the environment
         obs = env.reset()
+        previous_reward = set_step_reward(env_observation=obs, reset=True)
         best_reward = False
         
         # Setup rendering
@@ -198,6 +207,8 @@ if __name__ == "__main__":
 
         # Initialize device control
         device.start_control()
+
+        episode_reward = 0
 
         while True:
             # Set active robot
@@ -241,13 +252,22 @@ if __name__ == "__main__":
                 action = action[: env.action_dim]
 
             # # Step through the simulation and render
-            # if action.sum():
+            if action.sum():
+                action_flag = True
+            else:
+                action_flag = False
             #     action /= np.max(np.abs(action))
             #     action *= Amax12
             #     print(action)
             obs, reward, done, info = env.step(action)
+            reward, previous_reward = set_step_reward(env_observation=obs, previous_reward=previous_reward, reset=False, action_flag=action_flag)
             # print(f'd: {obs["d"]:.4f}, t: {obs["t"]:.4f}, angle: {obs["angle"]:.4f}')
-            print(obs["hole_quat"])
-            print(obs["peg_quat"])
-            print()
+            # print(obs["hole_quat"])
+            # print(obs["peg_quat"])
+            # print()
+
+            # print(reward)
+            episode_reward += reward
+            print(f'episode reward: {episode_reward:.6f}, hole_quat: {obs["hole_quat"]}, peg_quat: {obs["peg_quat"]}')
+
             env.render()

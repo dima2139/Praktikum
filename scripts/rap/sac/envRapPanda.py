@@ -44,24 +44,6 @@ class envRapPanda(gym.Env):
         self.num_elapsed_episodes = envNumber
         self.primitive            = primitive
 
-        self.action_space_map = {
-            6:  {'idx':0 , 'name':'peg-Z_m', 'delta':0},
-            10: {'idx':1 , 'name':'peg-X_m', 'delta':-0.25},
-            8:  {'idx':2 , 'name':'peg-Y_m', 'delta':0},
-            2:  {'idx':3 , 'name':'peg-Z_r', 'delta':0},
-            0:  {'idx':4 , 'name':'peg-X_r', 'delta':0},
-            4:  {'idx':5 , 'name':'peg-Y_r', 'delta':0},
-            
-            7:  {'idx':6 , 'name':'hole-Z_m', 'delta':0},
-            11: {'idx':7 , 'name':'hole-X_m', 'delta':0.25},
-            9:  {'idx':8 , 'name':'hole-Y_m', 'delta':0},
-            3:  {'idx':9 , 'name':'hole-Z_r', 'delta':0},
-            1:  {'idx':10, 'name':'hole-X_r', 'delta':0},
-            5:  {'idx':11, 'name':'hole-Y_r', 'delta':0},
-
-            12: {'idx':12, 'name':'sleep',    'delta':0},
-        }
-
         self.action_space = spaces.Box(
             low   = -1,
             high  = +1,
@@ -105,7 +87,7 @@ class envRapPanda(gym.Env):
         def step_env(action_flat):
             env_observation, env_reward, env_done, env_info = self.env.step(action_flat)
             step_observation = self.set_step_observation(env_observation)
-            step_reward      = self.set_step_reward(env_reward, env_done, env_observation)
+            step_reward      = self.set_step_reward(env_observation)
             step_done        = self.set_step_done(env_done)
             step_info        = self.set_step_info(env_info)
             self.render()
@@ -113,9 +95,9 @@ class envRapPanda(gym.Env):
             return step_observation, step_reward, step_done, step_info
 
         action_reward  = 0
-        step_done         = False
-        action           *= ACTION_LIM
-        action            = action.astype(int)
+        step_done      = False
+        action        *= ACTION_LIM
+        action         = action.astype(int)
         if action.sum():
             while action.sum():
                 sign = np.sign(action)
@@ -148,17 +130,12 @@ class envRapPanda(gym.Env):
         return env_observation
 
     
-    def set_step_reward(self, env_reward, env_done, env_observation, reset=False):
-
-        if env_done and self.env.timestep != ENV_HORIZON:
-            pl(f'Environment solved! env_reward: {env_reward}\n\n\n')
-            step_reward = 1
+    def set_step_reward(self, env_observation, reset=False):
 
         if self.primitive == "align":
-            dist = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"])
-            dist += np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"])
-            dist /= 2
-            reward = dist
+            dist_peg  = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"]) / len(QUAT_ANGLES_PEG)
+            dist_hole = np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"]) / len(QUAT_ANGLES_HOLE)
+            reward    = 1 - (dist_peg + dist_hole)
 
         elif self.primitive == "angle":
             reward = env_observation[self.primitive]
@@ -175,11 +152,13 @@ class envRapPanda(gym.Env):
         
         if reset:
             self.previous_reward = reward
+            
             return None
 
         else:
             step_reward = reward - self.previous_reward
             self.previous_reward = reward
+
             return step_reward
 
 
@@ -244,7 +223,7 @@ class envRapPanda(gym.Env):
     def reset(self):
         self.render_episodes -= np.sign(self.render_episodes)
         observation           = self.env.reset()
-        self.set_step_reward(self.env.reward(), False, observation, reset=True)  # used to set self.previous_reward
+        self.set_step_reward(observation, reset=True)  # used to set self.previous_reward
         observation         = self.set_action_observation(observation)
         self.episode_reward = 0
 
