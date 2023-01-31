@@ -3,7 +3,6 @@
     adapted from robosuite.demos.demo_device_control.py
 """
 
-from pynput import keyboard
 import numpy as np
 import robosuite as suite
 from robosuite import load_controller_config
@@ -16,20 +15,8 @@ from quat_to_euler import quat_to_euler
 from align_to_axis import align_to_axis
 from align import align
 
-
-def keypress(key):
-    try:
-        if key.char == 'l':
-            align(1, direction=1, env=env, robot="peg")
-    except:
-        pass
-
 if __name__ == "__main__":  
 
-    # listener        = keyboard.Listener(
-    #     on_press = keypress
-    # )
-    # listener.start()
 
     #controller_fpath = "/home/dima/Desktop/Praktikum/g2-peg-in-hole/scripts/sim/osc_pose.json"
     # Get controller config
@@ -53,8 +40,7 @@ if __name__ == "__main__":
         use_camera_obs         = False,
         reward_shaping         = True,
         control_freq           = 20,
-        hard_reset             = False,
-        initialization_noise   = {'type': 'gaussian', 'magnitude': 0.3}
+        hard_reset             = False
     )
 
     # Wrap this environment in a visualization wrapper
@@ -65,9 +51,9 @@ if __name__ == "__main__":
 
     # initialize device        
     device = Keyboard(pos_sensitivity=1, rot_sensitivity=1)
-    env.viewer.add_keypress_callback(device.on_press)
-    # env.viewer.add_keyup_callback(device.on_release)
-    # env.viewer.add_keyrepeat_callback(device.on_press)
+    env.viewer.add_keypress_callback('any', device.on_press)
+    env.viewer.add_keyup_callback('any', device.on_release)
+    env.viewer.add_keyrepeat_callback('any', device.on_press)
     
     while True:
         # Reset the environment
@@ -125,27 +111,17 @@ if __name__ == "__main__":
             elif rem_action_dim < 0:
                 # We're in an environment with no gripper action space, so trim the action space to be the action dim
                 action = action[: env.action_dim]
-
             if action.sum():
-            #     print(obs['hole_quat'])
-                print(action)
-                # print(quat_to_euler(env._observables['hole_quat'].obs[0], env._observables['hole_quat'].obs[1], env._observables['hole_quat'].obs[2], env._observables['hole_quat'].obs[3]))
+                quat = "hole_quat"
+                quatp = "peg_quat"
+                print(env._observables[quatp].obs[0], env._observables[quatp].obs[1], env._observables[quatp].obs[2], env._observables[quatp].obs[3])
+                print(env._observables[quat].obs[0], env._observables[quat].obs[1], env._observables[quat].obs[2], env._observables[quat].obs[3])
+                #print(quat_to_euler(env._observables[quat].obs[0], env._observables[quat].obs[1], env._observables[quat].obs[2], env._observables[quat].obs[3]))
             # Step through the simulation and render
-
-            if action[0]:
-                align(0, direction=1, env=env, robot="hole")
-            if action[1]:
-                align(1, direction=-1, env=env, robot="hole")
-            if action[2]:
-                align(1, direction=1, env=env, robot="hole")
-            if action[3]:
-                align(1, direction=-1, env=env, robot="hole")
-            if action[4]:
-                align(2, direction=1, env=env, robot="hole")
-            if action[5]:
-                align(2, direction=-1, env=env, robot="hole")
+            if flag:
+                align(1, direction=1, env=env, robot="peg")
+                flag = False
             
+            action /= 10
             obs, reward, done, info = env.step(action)
             env.render()
-            # if action.sum():
-            #     print(obs['hole_quat'])
