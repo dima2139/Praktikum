@@ -247,4 +247,7 @@ if __name__ == "__main__":
             #     print(action)
             obs, reward, done, info = env.step(action)
             # print(f'd: {obs["d"]:.4f}, t: {obs["t"]:.4f}, angle: {obs["angle"]:.4f}')
+            print(obs["hole_quat"])
+            print(obs["peg_quat"])
+            print()
             env.render()
