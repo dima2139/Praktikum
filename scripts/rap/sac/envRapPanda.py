@@ -154,7 +154,13 @@ class envRapPanda(gym.Env):
             pl(f'Environment solved! env_reward: {env_reward}\n\n\n')
             step_reward = 1
 
-        if self.primitive == "angle":
+        if self.primitive == "align":
+            dist = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"])
+            dist += np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"])
+            dist /= 2
+            reward = dist
+
+        elif self.primitive == "angle":
             reward = env_observation[self.primitive]
         
         elif self.primitive == "d":
