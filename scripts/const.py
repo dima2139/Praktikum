@@ -43,4 +43,6 @@ ACTION_DIM    = 13 if STEP_MODE== 'action' else 12
 ENV_HORIZON   = 50
 AGENT_HORIZON = int(ENV_HORIZON / (ACTION_LIM / 2))  # This is necessarily an approximation
 NUM_VEC_ENVS  = 4
-PRIMITIVE     = 'd'
+PRIMITIVE     = 'align'
+QUAT_ANGLES_PEG = np.array([0.5, 0.5, 0.5, -0.5])
+QUAT_ANGLES_HOLE = np.array([0, 0.707, -0,707, 0])
