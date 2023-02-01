@@ -109,10 +109,18 @@ from scripts.const import *
 
 def set_step_reward(env_observation, previous_reward=None, reset=False, action_flag=False):
 
-        dist_peg  = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"]) / len(QUAT_ANGLES_PEG)
-        dist_hole = np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"]) / len(QUAT_ANGLES_HOLE)
-        reward    = 1 - (dist_peg + dist_hole)
+        if env_observation['robot0_eef_pos'][1] < -0.2 and env_observation['robot0_eef_pos'][-1] > 1.3:
+            angle_mag_peg  = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"]) / len(QUAT_ANGLES_PEG)
+        else:
+            angle_mag_peg  = 0.5
 
+        if env_observation['robot1_eef_pos'][1] > 0.2 and env_observation['robot1_eef_pos'][-1] > 1.2:
+            angle_mag_hole = np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"]) / len(QUAT_ANGLES_HOLE)
+        else:
+            angle_mag_hole = 0.5
+        
+        reward    = 1 - (angle_mag_peg + angle_mag_hole)
+        
         if reset:
             previous_reward = reward
             
@@ -210,6 +218,8 @@ if __name__ == "__main__":
 
         episode_reward = 0
 
+        # env.robots[1].set_robot_joint_positions([0.79456863, 0.93868992, 0.61284948, -2.55324803, 1.06315638,  3.67426987, -0.68658793])
+
         while True:
             # Set active robot
             active_robot = env.robots[0] if args.config == "bimanual" else env.robots[args.arm == "left"]
@@ -256,18 +266,16 @@ if __name__ == "__main__":
                 action_flag = True
             else:
                 action_flag = False
-            #     action /= np.max(np.abs(action))
-            #     action *= Amax12
-            #     print(action)
+ 
             obs, reward, done, info = env.step(action)
-            reward, previous_reward = set_step_reward(env_observation=obs, previous_reward=previous_reward, reset=False, action_flag=action_flag)
-            # print(f'd: {obs["d"]:.4f}, t: {obs["t"]:.4f}, angle: {obs["angle"]:.4f}')
-            # print(obs["hole_quat"])
-            # print(obs["peg_quat"])
-            # print()
+            
+            step_reward, previous_reward = set_step_reward(env_observation=obs, previous_reward=previous_reward, reset=False, action_flag=action_flag)
+            episode_reward += step_reward
 
-            # print(reward)
-            episode_reward += reward
-            print(f'episode reward: {episode_reward:.6f}, hole_quat: {obs["hole_quat"]}, peg_quat: {obs["peg_quat"]}')
+            if action_flag:
+                print(f'peg_quat: {obs["peg_quat"]}, hole_quat: {obs["hole_quat"]}')
+                print(f'robot0_eef_pos: {obs["robot0_eef_pos"]}, robot1_eef_pos: {obs["robot1_eef_pos"]}')
+                print(f'reward: {reward:.7f}, step_reward: {step_reward:.7f}, episode_reward: {episode_reward:.7f}')
+                print()
 
             env.render()

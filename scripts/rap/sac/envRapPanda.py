@@ -133,9 +133,17 @@ class envRapPanda(gym.Env):
     def set_step_reward(self, env_observation, reset=False):
 
         if self.primitive == "align":
-            dist_peg  = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"]) / len(QUAT_ANGLES_PEG)
-            dist_hole = np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"]) / len(QUAT_ANGLES_HOLE)
-            reward    = 1 - (dist_peg + dist_hole)
+            if env_observation['robot0_eef_pos'][1] < -0.2 and env_observation['robot0_eef_pos'][-1] > 1.3:
+                angle_mag_peg  = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"]) / len(QUAT_ANGLES_PEG)
+            else:
+                angle_mag_peg  = 0.5
+
+            if env_observation['robot1_eef_pos'][1] > 0.2 and env_observation['robot1_eef_pos'][-1] > 1.2:
+                angle_mag_hole = np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"]) / len(QUAT_ANGLES_HOLE)
+            else:
+                angle_mag_hole = 0.5
+            
+            reward    = 1 - (angle_mag_peg + angle_mag_hole)
 
         elif self.primitive == "angle":
             reward = env_observation[self.primitive]

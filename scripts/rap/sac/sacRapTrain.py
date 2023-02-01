@@ -26,12 +26,14 @@ args = parser.parse_args()
 if args.resume:
     savePath  = args.resume
     MODEL     = savePath.split('/')[-1]
+    os.remove(f'{savePath}/render_env')
 else:
     MODEL = f'{int(time.time())}'
     savePath  = f'models/sac/{MODEL}'
     mkdirs(savePath)
+    
+addDir('scripts', f'{savePath}/scripts', postfix=str(int(time.time())))
 
-addDir('scripts', f'{savePath}/scripts')
 
 
 ## Environment
@@ -82,7 +84,7 @@ else:
         learning_starts        = 100,
         batch_size             = 256,
         tau                    = 0.005,
-        gamma                  = 0.99,
+        gamma                  = 0.5, # 0.99
         train_freq             = 1,
         gradient_steps         = gradientSteps,  # 1 or -1 or n for vec_env 
         action_noise           = None,

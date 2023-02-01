@@ -1,8 +1,9 @@
 from stable_baselines3 import SAC
 from scripts.rap.sac.envRapPanda import envRapPanda
+from scripts.const import *
 
-model = SAC.load("/home/dve/Desktop/g2-peg-in-hole/models/sac/peg_XYZ__hole_XYZ__no_primitives/checkpoints/sac_resume_499800_steps.zip")
-envEval  = envRapPanda(evalEnv=True)
+model = SAC.load("/home/dve/Desktop/g2-peg-in-hole/models/sac/primitive_align/sac_resume_135000_steps.zip")
+envEval  = envRapPanda(evalEnv=True, primitive=PRIMITIVE)
 
 obs = envEval.reset()
 # obs = envEval.get_observation()
