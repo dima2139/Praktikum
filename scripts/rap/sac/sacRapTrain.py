@@ -23,16 +23,17 @@ args = parser.parse_args()
 
 
 ## Setup
+timestamp = str(int(time.time()))
 if args.resume:
     savePath  = args.resume
     MODEL     = savePath.split('/')[-1]
     os.remove(f'{savePath}/render_env')
 else:
-    MODEL = f'{int(time.time())}'
+    MODEL = timestamp
     savePath  = f'models/sac/{MODEL}'
     mkdirs(savePath)
     
-addDir('scripts', f'{savePath}/scripts', postfix=str(int(time.time())))
+addDir('scripts', f'{savePath}/scripts', postfix=timestamp)
 
 
 
@@ -56,7 +57,7 @@ logging.basicConfig(filename=logFile, format='%(message)s')
 
 ## Model
 if args.resume:
-    pl('\n\n\nContinuing training...\n\n\n')
+    pl(f'\n\n\nContinuing training at {timestamp}...\n\n\n')
     artefacts = sorted_nicely(os.listdir(args.resume))
     for a in artefacts:
         if 'steps.zip' in a:
@@ -110,7 +111,7 @@ else:
 checkpoint_callback = CheckpointCallback(
     save_freq          = AGENT_HORIZON * 250,
     save_path          = savePath,
-    name_prefix        = 'sac_resume',
+    name_prefix        = 'sac',
     save_replay_buffer = True,
     save_vecnormalize  = True,
 )

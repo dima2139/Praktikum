@@ -109,17 +109,18 @@ from scripts.const import *
 
 def set_step_reward(env_observation, previous_reward=None, reset=False, action_flag=False):
 
-        if env_observation['robot0_eef_pos'][1] < -0.2 and env_observation['robot0_eef_pos'][-1] > 1.3:
+        if np.all(MIN_BBOX_PEG <= env_observation['robot0_eef_pos']) and np.all(env_observation['robot0_eef_pos'] <= MAX_BBOX_PEG):
             angle_mag_peg  = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"]) / len(QUAT_ANGLES_PEG)
         else:
             angle_mag_peg  = 0.5
 
-        if env_observation['robot1_eef_pos'][1] > 0.2 and env_observation['robot1_eef_pos'][-1] > 1.2:
+        if np.all(MIN_BBOX_HOLE <= env_observation['robot1_eef_pos']) and np.all(env_observation['robot1_eef_pos'] <= MAX_BBOX_HOLE):
             angle_mag_hole = np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"]) / len(QUAT_ANGLES_HOLE)
         else:
             angle_mag_hole = 0.5
         
         reward    = 1 - (angle_mag_peg + angle_mag_hole)
+
         
         if reset:
             previous_reward = reward
