@@ -126,6 +126,6 @@ model.learn(
     
     eval_freq           = AGENT_HORIZON * 100,
     eval_env            = envEval,
-    n_eval_episodes     = 3,
+    n_eval_episodes     = 5,
 )
 model.save(f'{savePath}/sac_final')

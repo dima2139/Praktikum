@@ -78,7 +78,7 @@ class envRapPanda(gym.Env):
             reward_shaping         = True,
             control_freq           = 20,
             hard_reset             = False,
-            initialization_noise   = {'type': 'uniform', 'magnitude': 0.3}
+            initialization_noise   = {'type': 'uniform', 'magnitude': 0.15}
         )
 
 
@@ -145,11 +145,14 @@ class envRapPanda(gym.Env):
             
             reward    = 1 - (angle_mag_peg + angle_mag_hole)
 
-        elif self.primitive == "angle":
-            reward = env_observation[self.primitive]
+        # elif self.primitive == "angle":
+        #     reward = env_observation[self.primitive]
         
-        elif self.primitive == "d":
-            reward = 1 - np.tanh(env_observation[self.primitive])
+        elif PRIMITIVE=='d':
+            if np.all(MIN_BBOX_HOLE[1] <= env_observation['robot1_eef_pos'][1]):
+                reward = 1 - np.tanh(env_observation[PRIMITIVE])
+            else:
+                reward = 0
 
         elif self.primitive == "reach+t":
             hole_pos         = self.env.sim.data.body_xpos[self.env.hole_body_id]

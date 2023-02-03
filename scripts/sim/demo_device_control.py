@@ -107,19 +107,26 @@ from scripts.const import *
 
 
 
-def set_step_reward(env_observation, previous_reward=None, reset=False, action_flag=False):
+def set_step_reward(env_observation, previous_reward=None, reset=False):
 
-        if np.all(MIN_BBOX_PEG <= env_observation['robot0_eef_pos']) and np.all(env_observation['robot0_eef_pos'] <= MAX_BBOX_PEG):
-            angle_mag_peg  = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"]) / len(QUAT_ANGLES_PEG)
-        else:
-            angle_mag_peg  = 0.5
+        if PRIMITIVE=='align':
+            if np.all(MIN_BBOX_PEG <= env_observation['robot0_eef_pos']) and np.all(env_observation['robot0_eef_pos'] <= MAX_BBOX_PEG):
+                angle_mag_peg  = np.linalg.norm(QUAT_ANGLES_PEG - env_observation["peg_quat"]) / len(QUAT_ANGLES_PEG)
+            else:
+                angle_mag_peg  = 0.5
 
-        if np.all(MIN_BBOX_HOLE <= env_observation['robot1_eef_pos']) and np.all(env_observation['robot1_eef_pos'] <= MAX_BBOX_HOLE):
-            angle_mag_hole = np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"]) / len(QUAT_ANGLES_HOLE)
-        else:
-            angle_mag_hole = 0.5
+            if np.all(MIN_BBOX_HOLE <= env_observation['robot1_eef_pos']) and np.all(env_observation['robot1_eef_pos'] <= MAX_BBOX_HOLE):
+                angle_mag_hole = np.linalg.norm(QUAT_ANGLES_HOLE - env_observation["hole_quat"]) / len(QUAT_ANGLES_HOLE)
+            else:
+                angle_mag_hole = 0.5
+            
+            reward = 1 - (angle_mag_peg + angle_mag_hole)
         
-        reward    = 1 - (angle_mag_peg + angle_mag_hole)
+        elif PRIMITIVE=='d':
+            if np.all(MIN_BBOX_HOLE[1] <= env_observation['robot1_eef_pos'][1]):
+                reward = 1 - np.tanh(env_observation[PRIMITIVE])
+            else:
+                reward = 0
 
         
         if reset:
@@ -130,9 +137,6 @@ def set_step_reward(env_observation, previous_reward=None, reset=False, action_f
         else:
             step_reward = reward - previous_reward
             previous_reward = reward
-
-            # if action_flag:
-            #     print(f'step_reward: {step_reward}')
 
             return step_reward, previous_reward
 
@@ -165,6 +169,7 @@ if __name__ == "__main__":
         "env_name"          : args.environment,
         "robots"            : args.robots,
         # "initial_qpos"      : np.array(args.robot_init_qpos),
+        # "initial_qpos"      : np.array([[0.008, -1.226, 0.026, -2.680, -0.074, 2.987, 0.815], [0.045, -0.776, -0.044, -2.217, 0.006, 1.452, -0.744]]),
         "controller_configs": controller_config,
     }
 
@@ -185,7 +190,7 @@ if __name__ == "__main__":
         reward_shaping         = True,
         control_freq           = 20,
         hard_reset             = False,
-        # initialization_noise   = {'type': 'uniform', 'magnitude': 0.5}
+        # initialization_noise   = {'type': 'uniform', 'magnitude': 0.3}
     )
 
     # Wrap this environment in a visualization wrapper
@@ -209,6 +214,9 @@ if __name__ == "__main__":
         # Setup rendering
         cam_id = 0
         num_cam = len(env.sim.model.camera_names)
+
+        # env.robots[0].set_robot_joint_positions([0.041, -0.829, -0.055, -2.301, 0.022, 3.058, 0.706])
+        # env.robots[1].set_robot_joint_positions([-0.046, -1.132, -0.176, -2.620, -0.138, 1.518, -0.914])
         env.render()
 
         # Initialize variables that should the maintained between resets
@@ -270,7 +278,7 @@ if __name__ == "__main__":
  
             obs, reward, done, info = env.step(action)
             
-            step_reward, previous_reward = set_step_reward(env_observation=obs, previous_reward=previous_reward, reset=False, action_flag=action_flag)
+            step_reward, previous_reward = set_step_reward(env_observation=obs, previous_reward=previous_reward, reset=False)
             episode_reward += step_reward
 
             if action_flag:
