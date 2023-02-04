@@ -107,7 +107,7 @@ from scripts.const import *
 
 
 
-def set_step_reward(env_observation, previous_reward=None, reset=False):
+def set_step_reward(env, env_observation, previous_reward=None, reset=False):
 
         if PRIMITIVE=='align':
             if np.all(MIN_BBOX_PEG <= env_observation['robot0_eef_pos']) and np.all(env_observation['robot0_eef_pos'] <= MAX_BBOX_PEG):
@@ -123,12 +123,20 @@ def set_step_reward(env_observation, previous_reward=None, reset=False):
             reward = 1 - (angle_mag_peg + angle_mag_hole)
         
         elif PRIMITIVE=='d':
-            if np.all(MIN_BBOX_HOLE[1] <= env_observation['robot1_eef_pos'][1]):
+            if np.all(MIN_BBOX_PEG <= env_observation['robot0_eef_pos']) and np.all(env_observation['robot0_eef_pos'] <= MAX_BBOX_PEG) \
+            and np.all(MIN_BBOX_HOLE <= env_observation['robot1_eef_pos']) and np.all(env_observation['robot1_eef_pos'] <= MAX_BBOX_HOLE):
                 reward = 1 - np.tanh(env_observation[PRIMITIVE])
             else:
                 reward = 0
 
+        elif PRIMITIVE == "t":
+            hole_pos         = env.sim.data.body_xpos[env.hole_body_id]
+            gripper_site_pos = env.sim.data.body_xpos[env.peg_body_id]
+            dist             = np.linalg.norm(gripper_site_pos - hole_pos)
+            reaching_reward  = 1 - np.tanh(1.0 * dist)
+            reward           = (reaching_reward + (1 - np.tanh(np.abs(env_observation[PRIMITIVE])))) / 2
         
+
         if reset:
             previous_reward = reward
             
@@ -190,7 +198,7 @@ if __name__ == "__main__":
         reward_shaping         = True,
         control_freq           = 20,
         hard_reset             = False,
-        # initialization_noise   = {'type': 'uniform', 'magnitude': 0.3}
+        initialization_noise   = {'type': 'uniform', 'magnitude': 0.05}
     )
 
     # Wrap this environment in a visualization wrapper
@@ -208,7 +216,7 @@ if __name__ == "__main__":
     while True:
         # Reset the environment
         obs = env.reset()
-        previous_reward = set_step_reward(env_observation=obs, reset=True)
+        previous_reward = set_step_reward(env, env_observation=obs, reset=True)
         best_reward = False
         
         # Setup rendering
@@ -278,7 +286,7 @@ if __name__ == "__main__":
  
             obs, reward, done, info = env.step(action)
             
-            step_reward, previous_reward = set_step_reward(env_observation=obs, previous_reward=previous_reward, reset=False)
+            step_reward, previous_reward = set_step_reward(env, env_observation=obs, previous_reward=previous_reward, reset=False)
             episode_reward += step_reward
 
             if action_flag:

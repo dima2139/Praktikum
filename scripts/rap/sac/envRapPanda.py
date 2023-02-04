@@ -87,7 +87,7 @@ class envRapPanda(gym.Env):
         def step_env(action_flat):
             env_observation, env_reward, env_done, env_info = self.env.step(action_flat)
             step_observation = self.set_step_observation(env_observation)
-            step_reward      = self.set_step_reward(env_observation)
+            step_reward      = self.set_step_reward(env_observation, env_reward)
             step_done        = self.set_step_done(env_done)
             step_info        = self.set_step_info(env_info)
             self.render()
@@ -102,7 +102,10 @@ class envRapPanda(gym.Env):
             while action.sum():
                 sign = np.sign(action)
                 action -= sign
-                action_flat = sign * Amax12
+                sign_12 = np.zeros(12)
+                sign_12[:3] = sign[:3]
+                sign_12[6:9] = sign[3:]
+                action_flat = sign_12 * Amax12
                 step_observation, step_reward, step_done, step_info = step_env(action_flat)
                 action_reward += step_reward
                 if step_done:
@@ -130,7 +133,7 @@ class envRapPanda(gym.Env):
         return env_observation
 
     
-    def set_step_reward(self, env_observation, reset=False):
+    def set_step_reward(self, env_observation, env_reward, reset=False):
 
         if self.primitive == "align":
             if np.all(MIN_BBOX_PEG <= env_observation['robot0_eef_pos']) and np.all(env_observation['robot0_eef_pos'] <= MAX_BBOX_PEG):
@@ -149,17 +152,20 @@ class envRapPanda(gym.Env):
         #     reward = env_observation[self.primitive]
         
         elif PRIMITIVE=='d':
-            if np.all(MIN_BBOX_HOLE[1] <= env_observation['robot1_eef_pos'][1]):
+            if np.all(MIN_BBOX_PEG <= env_observation['robot0_eef_pos']) and np.all(env_observation['robot0_eef_pos'] <= MAX_BBOX_PEG) \
+            and np.all(MIN_BBOX_HOLE <= env_observation['robot1_eef_pos']) and np.all(env_observation['robot1_eef_pos'] <= MAX_BBOX_HOLE):
                 reward = 1 - np.tanh(env_observation[PRIMITIVE])
             else:
                 reward = 0
 
-        elif self.primitive == "reach+t":
-            hole_pos         = self.env.sim.data.body_xpos[self.env.hole_body_id]
-            gripper_site_pos = self.env.sim.data.body_xpos[self.env.peg_body_id]
-            dist             = np.linalg.norm(gripper_site_pos - hole_pos)
-            reaching_reward  = 1 - np.tanh(1.0 * dist)
-            reward           = (reaching_reward + (1 - np.tanh(np.abs(env_observation[self.primitive])))) / 2
+        elif self.primitive == "t":
+            reward = env_reward
+            # print(reward)
+            # hole_pos         = self.env.sim.data.body_xpos[self.env.hole_body_id]
+            # gripper_site_pos = self.env.sim.data.body_xpos[self.env.peg_body_id]
+            # dist             = np.linalg.norm(gripper_site_pos - hole_pos)
+            # reaching_reward  = 1 - np.tanh(1.0 * dist)
+            # reward           = (reaching_reward + (1 - np.tanh(np.abs(env_observation[self.primitive])))) / 2
         
         if reset:
             self.previous_reward = reward
@@ -234,7 +240,8 @@ class envRapPanda(gym.Env):
     def reset(self):
         self.render_episodes -= np.sign(self.render_episodes)
         observation           = self.env.reset()
-        self.set_step_reward(observation, reset=True)  # used to set self.previous_reward
+        reward   = self.env.reward()
+        self.set_step_reward(observation, reward, reset=True)  # used to set self.previous_reward
         observation         = self.set_action_observation(observation)
         self.episode_reward = 0
 

@@ -18,6 +18,7 @@ SEED  = 69
 Amin       = [-0.975 , -0.975 , -0.975 , -0.150 , -0.150 , -0.150]
 Amax       = [+0.975 , +0.975 , +0.975 , +0.150 , +0.150 , +0.150]
 Amax12     = [+0.975 , +0.975 , +0.975 , +0.150 , +0.150 , +0.150, +0.975 , +0.975 , +0.975 , +0.150 , +0.150 , +0.150]
+Amax6      = [+0.975 , +0.975 , +0.975 , +0.975 , +0.975 , +0.975]
 Amax13     = [+0.975 , +0.975 , +0.975 , +0.150 , +0.150 , +0.150, +0.975 , +0.975 , +0.975 , +0.150 , +0.150 , +0.150, +0.0]
 Amax13Init = [+0.975 , +0.975 , +0.975 , +0.450 , +0.450 , +0.450, +0.975 , +0.975 , +0.975 , +0.450 , +0.450 , +0.450, +0.0]
 # A          = [-0.975, +0.975, -0.975, +0.975, -0.975, +0.975, -0.150, +0.150, -0.150, +0.150, -0.150, +0.150]
@@ -39,11 +40,11 @@ RESET_MODE       = 'default'  # default, fixed_dimensions, limit_velocity
 STEP_MODE        = 'default'  # default, action
 VEC              = True
 ACTION_LIM       = 30
-ACTION_DIM       = 13 if STEP_MODE== 'action' else 12
+ACTION_DIM       = 6#13 if STEP_MODE== 'action' else 12
 ENV_HORIZON      = 50
 AGENT_HORIZON    = int(ENV_HORIZON / (ACTION_LIM / 2))  # This is necessarily an approximation
 NUM_VEC_ENVS     = 4
-PRIMITIVE        = 'd'
+PRIMITIVE        = 't'
 QUAT_ANGLES_PEG  = np.array([0.5, 0.5, 0.5, -0.5])
 QUAT_ANGLES_HOLE = np.array([0, -0.7071, 0.7071, 0])
 BBOX_PEG         = np.array([[-0.2, +0.2], [-0.4, -0.2], [+1.5, +1.9]])

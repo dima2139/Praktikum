@@ -111,7 +111,7 @@ else:
 checkpoint_callback = CheckpointCallback(
     save_freq          = AGENT_HORIZON * 250,
     save_path          = savePath,
-    name_prefix        = 'sac',
+    name_prefix        = 'sac_resume',
     save_replay_buffer = True,
     save_vecnormalize  = True,
 )
