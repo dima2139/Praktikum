@@ -62,6 +62,16 @@
             "env": {"PYTHONPATH": "${workspaceRoot}"},
             "justMyCode": true,
         },
+
+        {
+            "name": "sacRapsEval",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/rap/sac/sacRapsEval.py",
+            "console": "integratedTerminal",
+            "env": {"PYTHONPATH": "${workspaceRoot}"},
+            "justMyCode": true,
+        },
     
         {
             "name": "demo_device_control",

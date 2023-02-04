@@ -40,8 +40,13 @@ RESET_MODE       = 'default'  # default, fixed_dimensions, limit_velocity
 STEP_MODE        = 'default'  # default, action
 VEC              = True
 ACTION_LIM       = 30
-ACTION_DIM       = 6#13 if STEP_MODE== 'action' else 12
-ENV_HORIZON      = 50
+ACTION_DIM       = 12
+
+PRIMITIVE_ALIGN_HORIZON = 100
+PRIMITIVE_D_HORIZON     = 50
+PRIMITIVE_T_HORIZON     = 50
+ENV_HORIZON             = PRIMITIVE_ALIGN_HORIZON + PRIMITIVE_D_HORIZON + PRIMITIVE_T_HORIZON
+
 AGENT_HORIZON    = int(ENV_HORIZON / (ACTION_LIM / 2))  # This is necessarily an approximation
 NUM_VEC_ENVS     = 4
 PRIMITIVE        = 't'
