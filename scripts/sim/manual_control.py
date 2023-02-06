@@ -122,6 +122,5 @@ if __name__ == "__main__":
                 align(1, direction=1, env=env, robot="peg")
                 flag = False
             
-            action /= 10
             obs, reward, done, info = env.step(action)
             env.render()
