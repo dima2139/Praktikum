@@ -1,6 +1,6 @@
 # daniel-v-e
 misc/*
-models/*
+models_all/*
 logs/*
 scripts__*/
 *.pyc

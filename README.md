@@ -153,76 +153,22 @@ pip install mujoco==2.1.5
 
 
 
----
-
-## How To
-
 #
 
-### Add files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+### Run End-to-End
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.lrz.de/smlr_ws22-23/g2-peg-in-hole.git
-git branch -M main
-git push -uf origin main
+python scripts/rl/sac/sacEval.py
 ```
-#
 
-### Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab.lrz.de/smlr_ws22-23/g2-peg-in-hole/-/settings/integrations)
+(Corresponding video under videos/end-to-end)
 
 #
 
-### Collaborate with your team
+### Run Action Primitives
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+```
+python scripts/rap/sac/sacRapsEval.py
+```
 
-#
-
-### Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
----
-
-## To be filled out
-
-#
-
-### Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-#
-
-### Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-#
-
-### Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-#
-
-### Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-#
-
-### Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+(Corresponding video under videos/primitives)
