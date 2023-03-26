@@ -11,19 +11,19 @@ envEval     = envRapsPanda(evalEnv=True)
 obs  = envEval.reset()
 done = False
 while True:
-    time.sleep(2)
+    # time.sleep(2)
     while not envEval.primitive_align_done:
         action, _states = model_align.predict(obs, deterministic=True)
         obs, reward, done, info = envEval.step(action, primitive="align")
         envEval.render()
 
-    time.sleep(2)
+    # time.sleep(2)
     while not envEval.primitive_d_done:
         action, _states = model_d.predict(obs, deterministic=True)
         obs, reward, done, info = envEval.step(action, primitive="d")
         envEval.render()
 
-    time.sleep(2)
+    # time.sleep(2)
     while not done:
         action, _states = model_t.predict(obs, deterministic=True)
         obs, reward, done, info = envEval.step(action, primitive="t")

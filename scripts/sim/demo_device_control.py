@@ -96,6 +96,7 @@ Examples:
 
 import argparse
 
+import time
 import numpy as np
 
 import robosuite as suite
@@ -198,7 +199,7 @@ if __name__ == "__main__":
         reward_shaping         = True,
         control_freq           = 20,
         hard_reset             = False,
-        initialization_noise   = {'type': 'uniform', 'magnitude': 0.05}
+        initialization_noise   = {'type': 'uniform', 'magnitude': 0.55}
     )
 
     # Wrap this environment in a visualization wrapper
@@ -212,6 +213,7 @@ if __name__ == "__main__":
     device = Keyboard(pos_sensitivity=args.pos_sensitivity, rot_sensitivity=args.rot_sensitivity)
     env.viewer.add_keypress_callback(device.on_press)
 
+    epsilon = 0.5
 
     while True:
         # Reset the environment
@@ -233,7 +235,10 @@ if __name__ == "__main__":
         # Initialize device control
         device.start_control()
 
-        episode_reward = 0
+        episode_reward = 0 
+        
+        flag = False
+        ts = time.time()
 
         # env.robots[1].set_robot_joint_positions([0.79456863, 0.93868992, 0.61284948, -2.55324803, 1.06315638,  3.67426987, -0.68658793])
 
@@ -296,3 +301,14 @@ if __name__ == "__main__":
                 print()
 
             env.render()
+
+            movement = np.sum(np.abs(obs['robot0_joint_vel'])) + np.sum(np.abs(obs['robot1_joint_vel']))
+            if not flag:
+                delta_t = time.time() - ts
+                if delta_t > 1:
+                    print(f'Movement: {movement}, timeout at 1 second, resetting environment')
+                    break
+
+                if movement < epsilon:
+                    print(f'Movement: {movement}, time taken: {time.time() - ts}')
+                    flag = True

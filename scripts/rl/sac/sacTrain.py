@@ -31,7 +31,7 @@ else:
     savePath  = f'models/sac/{MODEL}'
     mkdirs(savePath)
 
-addDir('scripts', f'{savePath}/scripts')
+addDir('scripts', f'{savePath}/scripts', postfix=int(time.time()))
 
 
 ## Environment
@@ -77,7 +77,7 @@ else:
     model = SAC(
         policy                 = 'MlpPolicy',
         env                    = envTrain,
-        learning_rate          = 0.0003,
+        learning_rate          = 0.0008,
         buffer_size            = 1000000,
         learning_starts        = 100,
         batch_size             = 256,
@@ -106,7 +106,7 @@ else:
 
 ## Training
 checkpoint_callback = CheckpointCallback(
-    save_freq          = AGENT_HORIZON * 100,
+    save_freq          = AGENT_HORIZON * 20,
     save_path          = savePath,
     name_prefix        = 'sac_resume',
     save_replay_buffer = True,

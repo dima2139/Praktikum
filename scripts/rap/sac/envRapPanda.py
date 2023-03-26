@@ -266,7 +266,7 @@ class envRapPanda(gym.Env):
 
 
     def render(self):
-        if self.render_episodes:
+        # if self.render_episodes:
             self.env.render()
             
     
