@@ -36,7 +36,8 @@ OSmax = [+3.000 , +3.000 , +3.000 , +1.000 , +1.000 , +1.000 , +1.000 , +3.000 ,
 Omin = RPSmin + RPSmin + OSmin
 Omax = RPSmax + RPSmax + OSmax
 
-RESET_MODE       = 'default'  # default, fixed_dimensions, limit_velocity
+RESET_MODE       = 'check_velocity'  # default, fixed_dimensions, limit_velocity, check_velocity
+MOVEMENT_EPSILON = 0.5
 STEP_MODE        = 'default'  # default, action
 VEC              = True
 ACTION_LIM       = 30
@@ -45,7 +46,8 @@ ACTION_DIM       = 12
 PRIMITIVE_ALIGN_HORIZON = 100
 PRIMITIVE_D_HORIZON     = 50
 PRIMITIVE_T_HORIZON     = 50
-ENV_HORIZON             = PRIMITIVE_ALIGN_HORIZON + PRIMITIVE_D_HORIZON + PRIMITIVE_T_HORIZON
+# ENV_HORIZON             = PRIMITIVE_ALIGN_HORIZON + PRIMITIVE_D_HORIZON + PRIMITIVE_T_HORIZON
+ENV_HORIZON             = 250
 
 AGENT_HORIZON    = int(ENV_HORIZON / (ACTION_LIM / 2))  # This is necessarily an approximation
 NUM_VEC_ENVS     = 4

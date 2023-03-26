@@ -34,10 +34,10 @@
             "program": "scripts/rl/sac/sacTrain.py",
             "console": "integratedTerminal",
             "env": {"PYTHONPATH": "${workspaceRoot}"},
-            "justMyCode": false,
-            // "args": [
-            //     "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1671459832"
-            // ]
+            "justMyCode": true,
+            "args": [
+                "--resume"  , "/home/dve/Desktop/g2-peg-in-hole/models/sac/1678525295"
+            ]
         },
 
         {

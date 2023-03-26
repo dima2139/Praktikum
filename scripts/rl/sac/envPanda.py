@@ -89,12 +89,13 @@ class envPanda(gym.Env):
             has_renderer           = True,
             has_offscreen_renderer = True,
             render_camera          = None,
-            ignore_done            = False,horizon                = ENV_HORIZON,
+            ignore_done            = False,
+            horizon                = ENV_HORIZON,
             use_camera_obs         = False,
             reward_shaping         = True,
             control_freq           = 20,
             hard_reset             = False,
-            initialization_noise   = {'type': 'uniform', 'magnitude': 0.3}
+            initialization_noise   = {'type': 'uniform', 'magnitude': 0.8}
         )
 
 
@@ -193,7 +194,7 @@ class envPanda(gym.Env):
         return env_info
 
     # ================================== END _step_ ================================== #
-    
+
     # ================================== START _action_ ================================== #
 
     def set_action_observation(self, action_observation, action_reward):
@@ -243,12 +244,13 @@ class envPanda(gym.Env):
     def set_action_done(self, action_done):
 
         if action_done:
-            rendered  = '(rendered) ' if self.render_episodes else ''
-            elapsed   = f'{self.envType} ep. {self.num_elapsed_episodes}'
-            reward    = f' -- ep. reward: {self.episode_reward}'
-            timenow   = f' -- time {datetime.datetime.now()}' if self.evalEnv else ''
-            timedelta = f' -- timedelta {time.time() - self.timeStart}' if self.evalEnv else ''
-            pl(f'{rendered}{elapsed}{reward}{timenow}{timedelta}')
+            rendered           = '(rendered) ' if self.render_episodes else ''
+            elapsed            = f'{self.envType} ep. {self.num_elapsed_episodes}'
+            episode_reward     = f' -- ep. reward: {self.episode_reward}'
+            environment_reward = f' -- env. reward: {self.env.reward()}'
+            timenow            = f' -- time {datetime.datetime.now()}' if self.evalEnv else ''
+            timedelta          = f' -- timedelta {time.time() - self.timeStart}' if self.evalEnv else ''
+            pl(f'{rendered}{elapsed}{episode_reward}{environment_reward}{timenow}{timedelta}')
             self.num_elapsed_episodes += 1 if self.evalEnv else NUM_VEC_ENVS 
 
         return action_done
@@ -263,9 +265,29 @@ class envPanda(gym.Env):
     # ================================== START misc ================================== #
     
     def reset(self):
-        self.render_episodes -= np.sign(self.render_episodes)
         
-        if RESET_MODE=='fixed_dimensions':
+        if RESET_MODE=='check_velocity':
+            flag = False
+            observation = self.env.reset()
+            time_start = time.time()
+            self.render()
+            while not flag:
+                action_flat = np.zeros(ACTION_DIM, dtype=float)
+                observation, reward, done, info = self.env.step(action_flat)
+                self.render()
+                movement = np.sum(np.abs(observation['robot0_joint_vel'])) + np.sum(np.abs(observation['robot1_joint_vel']))
+                if movement < MOVEMENT_EPSILON:
+                    pl(f'Movement: {movement}, time taken: {time.time() - time_start}')
+                    flag = True
+                    time.sleep(1)
+                else:
+                    delta_t = time.time() - time_start
+                    if delta_t > 0.5:
+                        pl(f'Movement: {movement}, timeout at 1 second, resetting environment')
+                        observation = self.env.reset()
+                        time_start = time.time()
+
+        elif RESET_MODE=='fixed_dimensions':
             t = 0
             while t < 0.2:
                 observation = self.env.reset()
@@ -297,10 +319,11 @@ class envPanda(gym.Env):
         else:
             observation = self.env.reset()
 
-        observation                     = self.set_action_observation(observation, self.env.reward())
-        self.previous_reward            = self.env.reward()
-        # self.best_reward                = self.env.reward()
-        self.episode_reward             = 0
+        self.render_episodes -= np.sign(self.render_episodes)
+        observation          = self.set_action_observation(observation, self.env.reward())
+        self.previous_reward = self.env.reward()
+        # self.best_reward = self.env.reward()
+        self.episode_reward = 0
 
         return observation
 

@@ -38,6 +38,7 @@ class envRapsPanda(gym.Env):
             )
             self.listener.start()
 
+        self.numSuccesses         = 0
         self.timeStart            = time.time()
         self.evalEnv              = evalEnv
         self.envType              = 'Evaluation' if evalEnv else 'Training'
@@ -242,12 +243,20 @@ class envRapsPanda(gym.Env):
     def set_action_done(self, action_done):
 
         if action_done:
-            rendered  = '(rendered) ' if self.render_episodes else ''
-            elapsed   = f'{self.envType} ep. {self.num_elapsed_episodes}'
-            reward    = f' -- ep. reward: {self.episode_reward}'
-            timenow   = f' -- time {datetime.datetime.now()}' if self.evalEnv else ''
-            timedelta = f' -- timedelta {time.time() - self.timeStart}' if self.evalEnv else ''
-            pl(f'{rendered}{elapsed}{reward}{timenow}{timedelta}')
+            if self.env.reward() > 0.9:
+                self.numSuccesses += 1 
+
+            rendered           = '(rendered) ' if self.render_episodes else ''
+            elapsed            = f'{self.envType} ep. {self.num_elapsed_episodes}'
+            episode_reward     = f' -- ep. reward: {self.episode_reward:.4f}'
+            environment_reward = f' -- env. reward: {self.env.reward():.4f}'
+            success_rate       = f' -- success rate: {self.numSuccesses / self.num_elapsed_episodes:.2f}' if self.evalEnv else ''
+            timenow            = f' -- time {datetime.datetime.now()}' if self.evalEnv else ''
+            timedelta          = f' -- total timedelta {time.time() - self.timeStart:.2f}' if self.evalEnv else ''
+            avg_timedelta      = f' -- avg timedelta {(time.time() - self.timeStart) / self.num_elapsed_episodes:.2f}' if self.evalEnv else ''
+    
+            pl(f'{rendered}{elapsed}{episode_reward}{environment_reward}{success_rate}{timenow}{timedelta}{avg_timedelta}')
+            
             self.num_elapsed_episodes += 1 if self.evalEnv else NUM_VEC_ENVS 
 
         return action_done
